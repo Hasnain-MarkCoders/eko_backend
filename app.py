@@ -1,19 +1,34 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from routes import auth, profile
+import uvicorn
 
-app = FastAPI()
+app = FastAPI(
+    title="Eko Backend API",
+    description="Backend API for Eko application with authentication and profile management",
+    version="1.0.0"
+)
 
-# Simple GET endpoint
-@app.get("/ping")
-def ping():
-    return {"message": "pong"}
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure this properly for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Data model for POST
-class Message(BaseModel):
-    user: str
-    text: str
+# Include routers
+app.include_router(auth.router)
+app.include_router(profile.router)
 
-# Simple POST endpoint
-@app.post("/message")
-def create_message(msg: Message):
-    return {"status": "success", "data": msg.dict()}
+@app.get("/")
+async def root():
+    return {"message": "Welcome to Eko Backend API"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,2 +1,10 @@
 fastapi
 uvicorn
+motor
+firebase-admin
+PyJWT
+python-dotenv
+pytest
+pytest-asyncio
+httpx
+pytest-mock
