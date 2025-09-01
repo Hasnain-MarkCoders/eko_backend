@@ -11,6 +11,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
+# Create a non-root user for security
+RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+USER app
+
 # Expose FastAPI default port
 EXPOSE 8000
 
