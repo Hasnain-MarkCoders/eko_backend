@@ -32,10 +32,12 @@ def initialize_admin():
         return firebase_admin
     except ValueError:
         # Initialize with service account using environment variables
-        private_key = os.getenv("FIREBASE_PRIVATE_KEY", "")
+        private_key = os.getenv("FIREBASE_PRIVATE_KEY")
         
         # Handle different newline formats in the private key
         if private_key:
+            # Remove surrounding quotes if they exist
+            private_key = private_key.strip('"\'')
             # Replace literal \n with actual newlines (in case they exist)
             private_key = private_key.replace('\\n', '\n')
             # Also handle cases where newlines might be encoded differently
@@ -44,7 +46,7 @@ def initialize_admin():
             private_key = private_key.strip()
         
         firebase_config = {
-            "type": os.getenv("FIREBASE_TYPE", "service_account"),
+            "type": os.getenv("FIREBASE_TYPE"),
             "project_id": os.getenv("FIREBASE_PROJECT_ID"),
             "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
             "private_key": private_key,
@@ -54,9 +56,11 @@ def initialize_admin():
             "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
             "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
             "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL"),
-            "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN", "googleapis.com")
+            "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN")
         }
-        
+        # print("================== FIREBASE CONFIG ===================================")
+        # print(firebase_config)
+        # print("================== FIREBASE CONFIG ===================================")
         try:
             cred = credentials.Certificate(firebase_config)
             firebase_admin.initialize_app(cred)
