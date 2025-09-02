@@ -13,6 +13,12 @@ def initialize_admin():
         from unittest.mock import Mock
         mock_admin = Mock()
         mock_admin.auth = Mock()
+        # Configure the mock to avoid circular references
+        mock_admin.auth.generate_password_reset_link = Mock(return_value="https://example.com/reset?token=mock_token")
+        mock_admin.auth.verify_id_token = Mock()
+        mock_admin.auth.get_user = Mock()
+        mock_admin.auth.create_user = Mock()
+        mock_admin.auth.delete_user = Mock()
         return mock_admin
     
     try:
@@ -59,6 +65,12 @@ def initialize_admin():
             from unittest.mock import Mock
             mock_admin = Mock()
             mock_admin.auth = Mock()
+            # Configure the mock to avoid circular references
+            mock_admin.auth.generate_password_reset_link = Mock(return_value="https://example.com/reset?token=mock_token")
+            mock_admin.auth.verify_id_token = Mock()
+            mock_admin.auth.get_user = Mock()
+            mock_admin.auth.create_user = Mock()
+            mock_admin.auth.delete_user = Mock()
             return mock_admin
 
 def get_firebase_admin():
