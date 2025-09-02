@@ -14,16 +14,16 @@ fi
 
 # Stop and remove existing container if it exists
 echo "🛑 Stopping existing container..."
-docker stop eko_backend_container 2>/dev/null || true
-docker rm eko_backend_container 2>/dev/null || true
+podman stop eko_backend_container 2>/dev/null || true
+podman rm eko_backend_container 2>/dev/null || true
 
 # Build the Docker image
 echo "🔨 Building Docker image..."
-docker build -t eko_backend .
+podman build -t eko_backend .
 
 # Run the container with environment variables
 echo "🏃 Starting container..."
-docker run -d \
+podman run -d \
     --name eko_backend_container \
     --env-file .env \
     -p 9753:8000 \
@@ -31,12 +31,12 @@ docker run -d \
 
 # Check if container is running
 sleep 5
-if docker ps | grep -q eko_backend_container; then
+if podman ps | grep -q eko_backend_container; then
     echo "✅ Container started successfully!"
     echo "🌐 API is available at: http://localhost:9753"
-    echo "📋 Container logs: docker logs eko_backend_container"
+    echo "📋 Container logs: podman logs eko_backend_container"
 else
     echo "❌ Container failed to start. Check logs:"
-    docker logs eko_backend_container
+    podman logs eko_backend_container
     exit 1
 fi

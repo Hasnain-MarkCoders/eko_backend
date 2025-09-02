@@ -21,22 +21,11 @@ def initialize_admin():
         return firebase_admin
     except ValueError:
         # Initialize with service account using environment variables
-        private_key = os.getenv("FIREBASE_PRIVATE_KEY", "")
-        
-        # Handle different newline formats in the private key
-        if private_key:
-            # Replace literal \n with actual newlines (in case they exist)
-            private_key = private_key.replace('\\n', '\n')
-            # Also handle cases where newlines might be encoded differently
-            private_key = private_key.replace('\\r\\n', '\n').replace('\\r', '\n')
-            # Strip any trailing whitespace/newlines that might cause issues
-            private_key = private_key.strip()
-        
         firebase_config = {
             "type": os.getenv("FIREBASE_TYPE", "service_account"),
             "project_id": os.getenv("FIREBASE_PROJECT_ID"),
             "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
-            "private_key": private_key,
+            "private_key": os.getenv("FIREBASE_PRIVATE_KEY", "").replace('\\n', '\n'),
             "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
             "client_id": os.getenv("FIREBASE_CLIENT_ID"),
             "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
@@ -46,20 +35,9 @@ def initialize_admin():
             "universe_domain": os.getenv("FIREBASE_UNIVERSE_DOMAIN", "googleapis.com")
         }
         
-        try:
-            cred = credentials.Certificate(firebase_config)
-            firebase_admin.initialize_app(cred)
-            print("✅ Firebase Admin initialized successfully!")
-            return firebase_admin
-        except Exception as e:
-            print(f"❌ Firebase initialization failed: {str(e)}")
-            print("🔧 Please check your Firebase credentials in .env file")
-            print("💡 The app will continue without Firebase authentication")
-            # Return a mock object so the app doesn't crash
-            from unittest.mock import Mock
-            mock_admin = Mock()
-            mock_admin.auth = Mock()
-            return mock_admin
+        cred = credentials.Certificate(firebase_config)
+        firebase_admin.initialize_app(cred)
+        return firebase_admin
 
 def get_firebase_admin():
     """Get Firebase Admin instance"""
