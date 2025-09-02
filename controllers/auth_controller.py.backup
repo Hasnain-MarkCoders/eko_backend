@@ -16,6 +16,88 @@ class AuthController:
     def __init__(self):
         self.admin = initialize_admin()
     
+    async def firebase_auth(self, access_token: str, name: str = None, provider: str = None):
+        """Firebase authentication for regular users"""
+        try:
+            if not access_token:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Access token is required"
+                )
+            
+            # Verify Firebase token
+            decoded_token = await self.admin.auth.verify_id_token(access_token)
+            uid = decoded_token.get("uid")
+            
+            if not uid:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid token"
+                )
+            
+            # Get user data from Firebase
+            user_data = await self.admin.auth.get_user(uid)
+            user_data = user_data.__dict__
+            
+            # Check if user exists in database
+            existing_user = await users.find_one({
+                "email": user_data.get("email") or user_data.get("provider_data", [{}])[0].get("email")
+            })
+            
+            if not existing_user:
+                # Create new user
+                new_user = {
+                    "uid": uid,
+                    "email": user_data.get("email") or user_data.get("provider_data", [{}])[0].get("email"),
+                    "name": name or user_data.get("display_name"),
+                    "provider": provider or user_data.get("provider_data", [{}])[0].get("provider_id"),
+                    "status": "active",
+                    "welcome": True,
+                    "image": user_data.get("provider_data", [{}])[0].get("photo_url") or default_photo,
+                    "type": "user",
+                    "notificationToken": "",
+                    "isDeleted": False,
+                    "createdAt": datetime.now(timezone.utc),
+                    "updatedAt": datetime.now(timezone.utc)
+                }
+                
+                result = await users.insert_one(new_user)
+                new_user["_id"] = str(result.inserted_id)
+                
+                # Generate JWT token
+                token = jwt.encode({"_id": str(result.inserted_id)}, TOKEN_KEY, algorithm="HS256")
+                
+                return {
+                    "user": {
+                        "token": token,
+                        **new_user
+                    }
+                }
+            else:
+                # User exists, check if brand type
+                if existing_user.get("type") == "brand":
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Please use Sauced brand panel."
+                    )
+                
+                # Generate JWT token
+                token = jwt.encode({"_id": str(existing_user["_id"])}, TOKEN_KEY, algorithm="HS256")
+                
+                return {
+                    "user": {
+                        "token": token,
+                        **existing_user
+                    }
+                }
+                
+        except Exception as error:
+            print(f"ERROR = {error}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(error)
+            )
+    
     async def email_password_signup(self, email: str, password: str, name: str):
         """Email/password signup using Firebase"""
         try:
@@ -191,4 +273,4 @@ class AuthController:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(error)
-            )
+            ) 

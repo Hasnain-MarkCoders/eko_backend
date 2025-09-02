@@ -3,7 +3,6 @@ from database import users
 from services.firebase import initialize_admin
 from datetime import datetime, timezone
 from bson import ObjectId
-import uuid
 
 class ProfileController:
     def __init__(self):
@@ -94,7 +93,7 @@ class ProfileController:
         }
     
     async def delete_user(self, user_id: str):
-        """Soft delete user account (Reddit-style deletion)"""
+        """Delete user account from both database and Firebase"""
         try:
             try:
                 # Convert string user_id to ObjectId
@@ -113,54 +112,25 @@ class ProfileController:
                     detail="User not found"
                 )
             
-            # Check if user is already deleted
-            if user.get("isDeleted", False):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="User account is already deleted"
-                )
+            # Delete user from Firebase
+            if user.get("uid"):
+                try:
+                    self.admin.auth.delete_user(user["uid"])
+                except Exception as e:
+                    print(f"Firebase deletion error: {e}")
+                    # Continue with database deletion even if Firebase fails
             
-            # Generate a unique deleted username to avoid conflicts
-            deleted_username = f"deleted_user_{uuid.uuid4().hex[:8]}"
-            deleted_email = f"deleted_{uuid.uuid4().hex[:8]}@deleted.local"
+            # Delete user from database
+            result = await users.delete_one({"_id": object_id})
             
-            # Soft delete: Update user record instead of removing it
-            update_data = {
-                "isDeleted": True,
-                "status": "deleted",
-                "name": deleted_username,
-                "email": deleted_email,
-                "image": "https://sauced-app-bucket.s3.us-east-2.amazonaws.com/sauced_placeholder.webp",
-                "notificationToken": "",
-                "updatedAt": datetime.now(timezone.utc),
-                "deletedAt": datetime.now(timezone.utc)
-            }
-            
-            # Update user in database (soft delete)
-            result = await users.update_one(
-                {"_id": object_id},
-                {"$set": update_data}
-            )
-            
-            if result.modified_count == 0:
+            if result.deleted_count == 0:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="User not found"
                 )
             
-            # Delete user from Firebase (hard delete from Firebase)
-            if user.get("uid"):
-                try:
-                    self.admin.auth.delete_user(user["uid"])
-                    print(f"✅ Firebase user {user['uid']} deleted successfully")
-                except Exception as e:
-                    print(f"❌ Firebase deletion error: {e}")
-                    # Continue even if Firebase deletion fails
-                    # The user is already soft-deleted in our database
-            
             return {
-                "message": "User account deleted successfully",
-                "note": "Account has been deactivated and personal information removed. Firebase account has been deleted."
+                "message": "User Deleted Successfully"
             }
             
         except Exception as e:
@@ -277,4 +247,4 @@ class ProfileController:
         return {
             "message": "Notification Token Updated Successfully",
             "user": updated_user
-        }
+        } 

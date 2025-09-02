@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "eko-backend-api-collection",
 		"name": "Eko Backend API",
-		"description": "Complete API collection for Eko Backend with authentication and profile management endpoints. Supports email/password authentication.",
+		"description": "Complete API collection for Eko Backend with authentication and profile management endpoints. Supports both Firebase OAuth and email/password authentication.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "eko-backend"
 	},
@@ -126,6 +126,82 @@
 		{
 			"name": "Authentication",
 			"item": [
+				{
+					"name": "Firebase Authentication",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accessToken\": \"firebase_token_here\",\n  \"name\": \"John Doe\",\n  \"provider\": \"google.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/firebase",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"firebase"
+							]
+						},
+						"description": "Authenticate user with Firebase ID token. Returns JWT token for subsequent requests. Use this for OAuth providers like Google, Facebook, etc."
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"accessToken\": \"firebase_token_here\",\n  \"name\": \"John Doe\",\n  \"provider\": \"google.com\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/firebase",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"firebase"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"user\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"_id\": \"user_id_here\",\n    \"uid\": \"firebase_uid\",\n    \"email\": \"user@example.com\",\n    \"name\": \"John Doe\",\n    \"provider\": \"google.com\",\n    \"status\": \"active\",\n    \"welcome\": true,\n    \"image\": \"https://example.com/photo.jpg\",\n    \"type\": \"user\"\n  }\n}"
+						}
+					]
+				},
 				{
 					"name": "Email/Password Signup",
 					"request": {

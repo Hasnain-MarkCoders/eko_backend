@@ -1,5 +1,13 @@
 from pydantic import BaseModel, EmailStr
 
+class FirebaseAuthRequest(BaseModel):
+    accessToken: str
+    name: str
+    provider: str
+
+class FirebaseAuthResponse(BaseModel):
+    user: dict
+
 class EmailPasswordSignupRequest(BaseModel):
     email: EmailStr
     password: str
@@ -14,4 +22,4 @@ class EmailPasswordResponse(BaseModel):
     message: str
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
+    email: EmailStr 

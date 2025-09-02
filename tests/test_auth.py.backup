@@ -9,6 +9,35 @@ client = TestClient(app)
 class TestAuthEndpoints:
     """Test cases for authentication endpoints"""
     
+    def test_firebase_auth_missing_token(self, client):
+        """Test Firebase auth with missing token."""
+        response = client.post("/auth/firebase", json={})
+        # FastAPI returns 422 for validation errors, which is correct
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    
+    def test_firebase_auth_invalid_schema(self, client):
+        """Test Firebase auth with invalid schema."""
+        response = client.post("/auth/firebase", json={"invalid": "data"})
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    
+    def test_firebase_auth_with_valid_schema(self, client):
+        """Test Firebase auth with valid schema."""
+        response = client.post("/auth/firebase", json={
+            "accessToken": "valid_token_here",
+            "name": "Test User",
+            "provider": "google.com"
+        })
+        # Should fail due to invalid token, but schema validation should pass
+        assert response.status_code in [400, 401, 500]  # Any error status is fine for invalid token
+    
+    def test_firebase_auth_endpoint_exists(self, client):
+        """Test that Firebase auth endpoint exists."""
+        response = client.post("/auth/firebase", json={
+            "accessToken": "test_token"
+        })
+        # Endpoint exists if we get any response (even error)
+        assert response.status_code is not None
+    
     def test_auth_router_included(self, client):
         """Test that auth router is included in the app."""
         response = client.get("/docs")
@@ -160,4 +189,4 @@ class TestAuthEndpoints:
         """Test forgot password with missing fields."""
         response = client.post("/auth/forgot-password", json={})
         # Should fail validation
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY 

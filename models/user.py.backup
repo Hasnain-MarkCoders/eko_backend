@@ -10,13 +10,12 @@ class UserModel(BaseModel):
     provider: Optional[str] = "email"
     status: str = "active"
     welcome: bool = True
-    image: Optional[str] = "https://sauced-app-bucket.s3.us-east-2.amazonaws.com/sauced_placeholder.webp"
+    image: Optional[str] = "https://sauced-app-bucket.s3.us-east-2.amazonodb.net/sauced_placeholder.webp"
     type: str = "user"
     notificationToken: Optional[str] = ""
     isDeleted: bool = False
     createdAt: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
-    deletedAt: Optional[datetime] = None
 
     model_config = {
         "validate_by_name": True,
@@ -46,5 +45,4 @@ class UserResponse(BaseModel):
     notificationToken: Optional[str]
     isDeleted: bool
     createdAt: datetime
-    updatedAt: datetime
-    deletedAt: Optional[datetime] = None
+    updatedAt: datetime 
