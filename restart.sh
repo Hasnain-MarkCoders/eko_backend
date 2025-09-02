@@ -161,29 +161,32 @@ stop_and_remove_containers() {
     fi
 }
 
-# Function to remove Eko Backend images
+# Function to remove Eko Backend images (only with --force flag)
 remove_images() {
     local runtime="$1"
-    print_step "Removing Eko Backend images..."
     
-    # Remove images with eko_backend in the name
-    local images=$($runtime images --filter "reference=eko_backend*" --format "{{.Repository}}:{{.Tag}}" 2>/dev/null || true)
-    if [ -n "$images" ]; then
-        echo "$images" | while read -r image; do
-            if [ -n "$image" ]; then
-                print_info "Removing image: $image"
-                $runtime rmi "$image" 2>/dev/null || true
-            fi
-        done
-        print_success "All Eko Backend images removed"
-    else
-        print_info "No Eko Backend images found to remove"
-    fi
-    
-    # Also remove any dangling images if force cleanup is enabled
     if [ "$FORCE_CLEANUP" = true ]; then
+        print_step "Removing Eko Backend images (force cleanup enabled)..."
+        
+        # Remove images with eko_backend in the name
+        local images=$($runtime images --filter "reference=eko_backend*" --format "{{.Repository}}:{{.Tag}}" 2>/dev/null || true)
+        if [ -n "$images" ]; then
+            echo "$images" | while read -r image; do
+                if [ -n "$image" ]; then
+                    print_info "Removing image: $image"
+                    $runtime rmi "$image" 2>/dev/null || true
+                fi
+            done
+            print_success "All Eko Backend images removed"
+        else
+            print_info "No Eko Backend images found to remove"
+        fi
+        
+        # Also remove any dangling images
         print_info "Removing dangling images..."
         $runtime image prune -f 2>/dev/null || true
+    else
+        print_info "Skipping image removal (use --force to remove images for complete cleanup)"
     fi
 }
 
@@ -254,9 +257,15 @@ deploy_with_docker() {
     local runtime="$1"
     print_step "Building and deploying with $runtime..."
     
-    # Build the image
+    # Build the image (with cache for faster builds)
     print_info "Building container image with $runtime..."
-    $runtime build --no-cache -t eko_backend .
+    if [ "$FORCE_CLEANUP" = true ]; then
+        print_info "Force cleanup enabled - building without cache..."
+        $runtime build --no-cache -t eko_backend .
+    else
+        print_info "Building with cache for faster deployment..."
+        $runtime build -t eko_backend .
+    fi
     
     # Run the container
     print_info "Starting container with $runtime..."
@@ -315,9 +324,9 @@ show_help() {
     echo ""
     echo "This script will:"
     echo "  1. Stop and remove all Eko Backend containers"
-    echo "  2. Remove all Eko Backend images"
+    echo "  2. Optionally remove images (only with --force flag)"
     echo "  3. Optionally clean up unused volumes and networks (with --force)"
-    echo "  4. Rebuild the application from scratch"
+    echo "  4. Rebuild the application (with cache for speed)"
     echo "  5. Deploy the new version"
     echo ""
     echo "Examples:"
@@ -353,8 +362,12 @@ main() {
     # Check if daemon is running
     check_runtime_daemon "$selected_runtime"
     
-    # Perform complete cleanup
-    print_warning "This will perform a complete cleanup and rebuild. This may take several minutes."
+    # Perform cleanup and rebuild
+    if [ "$FORCE_CLEANUP" = true ]; then
+        print_warning "This will perform a complete cleanup and rebuild. This may take several minutes."
+    else
+        print_info "This will perform a fast rebuild using Docker cache. This should be much faster."
+    fi
     
     # Cleanup phase
     stop_and_remove_containers "$selected_runtime"
