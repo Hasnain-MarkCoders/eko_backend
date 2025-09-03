@@ -90,6 +90,56 @@ POST /auth/forgot-password
 }
 ```
 
+#### User Onboarding
+```http
+POST /auth/onboarding
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "name": "John Doe",
+  "age": 25,
+  "gender": "male",
+  "language": "english",
+  "purpose": "personal assistance"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Onboarding completed successfully",
+  "data": {
+    "user_id": "12345",
+    "name": "John Doe",
+    "email": "user@example.com",
+    "age": 25,
+    "gender": "male",
+    "language": "english",
+    "purpose": "personal assistance",
+    "welcome": false,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
+**Field Validation:**
+- `name`: Required, non-empty string
+- `age`: Required, integer between 1-120
+- `gender`: Required, one of: "male", "female", "other"
+- `language`: Required, one of: "english", "spanish", "french", "german", "italian", "portuguese", "chinese", "japanese", "korean", "arabic", "hindi"
+- `purpose`: Required, one of: "personal assistance", "business", "education", "entertainment", "health", "productivity", "social", "other"
+
+**Error Responses:**
+- `400 Bad Request`: User has already completed onboarding (welcome = false)
+- `400 Bad Request`: Missing required fields or invalid field values
+- `404 Not Found`: User not found
+- `500 Internal Server Error`: Firebase or MongoDB update failure
+
 ### Profile Management Endpoints
 
 #### Change Display Name
@@ -358,6 +408,10 @@ All endpoints may return the following error responses:
   "welcome": "boolean",
   "notificationToken": "string",
   "isDeleted": "boolean",
+  "age": "integer",
+  "gender": "string",
+  "language": "string",
+  "purpose": "string",
   "createdAt": "string (ISO 8601)",
   "updatedAt": "string (ISO 8601)",
   "deletedAt": "string (ISO 8601)"
