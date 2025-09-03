@@ -10,7 +10,7 @@ class ProfileController:
         self.admin = initialize_admin()
     
     async def change_name(self, user_id: str, new_name: str):
-        """Change user's display name"""
+        """Change user's display name in both MongoDB and Firebase"""
         if not new_name or new_name.strip() == "":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -26,15 +26,38 @@ class ProfileController:
                 detail="Invalid user ID format"
             )
         
-        # Check if new name is same as current name
+        # Get current user to check existing name and get Firebase UID
         current_user = await users.find_one({"_id": object_id})
-        if current_user and current_user.get("name") == new_name:
+        if not current_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Check if new name is same as current name
+        if current_user.get("name") == new_name:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="New name cannot be the same as current name"
             )
         
-        # Update name in database
+        # Update name in Firebase first
+        firebase_uid = current_user.get("uid")
+        if firebase_uid:
+            try:
+                self.admin.auth.update_user(
+                    firebase_uid,
+                    display_name=new_name
+                )
+                print(f"✅ Firebase display name updated for user {firebase_uid}")
+            except Exception as e:
+                print(f"❌ Firebase update error: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to update display name in Firebase"
+                )
+        
+        # Update name in MongoDB
         result = await users.update_one(
             {"_id": object_id},
             {"$set": {"name": new_name, "updatedAt": datetime.now(timezone.utc)}}

@@ -14,7 +14,7 @@ auth_controller = AuthController()
 @router.post("/signup")
 async def email_password_signup(request: EmailPasswordSignupRequest):
     """Email/password signup endpoint"""
-    return await auth_controller.email_password_signup(request.email, request.password, request.name)
+    return await auth_controller.email_password_signup(request.email, request.password)
 
 @router.post("/login")
 async def email_password_login(request: EmailPasswordLoginRequest):

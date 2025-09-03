@@ -16,7 +16,7 @@ class AuthController:
     def __init__(self):
         self.admin = initialize_admin()
     
-    async def email_password_signup(self, email: str, password: str, name: str):
+    async def email_password_signup(self, email: str, password: str):
         """Email/password signup using Firebase"""
         try:
             # Check if user already exists in database
@@ -31,7 +31,6 @@ class AuthController:
             user_properties = {
                 "email": email,
                 "password": password,
-                "display_name": name,
                 "email_verified": False
             }
             
@@ -42,7 +41,7 @@ class AuthController:
             new_user = {
                 "uid": uid,
                 "email": email,
-                "name": name,
+                "name": "",  # Empty name initially, will be set during onboarding
                 "provider": "password",
                 "status": "active",
                 "welcome": True,
