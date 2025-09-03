@@ -4,7 +4,9 @@ from schemas.auth import (
     EmailPasswordSignupRequest,
     EmailPasswordLoginRequest,
     EmailPasswordResponse,
-    ForgotPasswordRequest
+    ForgotPasswordRequest,
+    OnboardingRequest,
+    OnboardingResponse
 )
 from middleware.auth import get_current_user
 
@@ -25,3 +27,15 @@ async def email_password_login(request: EmailPasswordLoginRequest):
 async def forgot_password(request: ForgotPasswordRequest):
     """Forgot password endpoint"""
     return await auth_controller.forgot_password(request.email)
+
+@router.post("/onboarding", response_model=OnboardingResponse)
+async def onboarding(request: OnboardingRequest, current_user: dict = Depends(get_current_user)):
+    """Complete user onboarding with additional profile information"""
+    return await auth_controller.onboarding(
+        current_user["_id"],
+        request.name,
+        request.age,
+        request.gender,
+        request.language,
+        request.purpose
+    )

@@ -191,3 +191,107 @@ class AuthController:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(error)
             )
+    
+    async def onboarding(self, user_id: str, name: str, age: int, gender: str, language: str, purpose: str):
+        """Complete user onboarding with additional profile information"""
+        try:
+            # Convert string user_id to ObjectId
+            try:
+                object_id = ObjectId(user_id)
+            except Exception:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid user ID format"
+                )
+            
+            # Get current user
+            current_user = await users.find_one({"_id": object_id})
+            if not current_user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+            
+            # Check if profile is already completed
+            if current_user.get("profile_completed", False):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Profile already completed. Onboarding can only be done once."
+                )
+            
+            # Check if user is deleted
+            if current_user.get("isDeleted", False):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Account has been deleted"
+                )
+            
+            # Update name in Firebase first (like profile/change-name API)
+            firebase_uid = current_user.get("uid")
+            if firebase_uid:
+                try:
+                    self.admin.auth.update_user(
+                        firebase_uid,
+                        display_name=name
+                    )
+                    print(f"✅ Firebase display name updated for user {firebase_uid}")
+                except Exception as e:
+                    print(f"❌ Firebase update error: {e}")
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Failed to update display name in Firebase"
+                    )
+            
+            # Update user in MongoDB with onboarding data
+            update_data = {
+                "name": name,
+                "age": age,
+                "gender": gender,
+                "language": language,
+                "purpose": purpose,
+                "profile_completed": True,
+                "updatedAt": datetime.now(timezone.utc)
+            }
+            
+            result = await users.update_one(
+                {"_id": object_id},
+                {"$set": update_data}
+            )
+            
+            if result.modified_count == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+            
+            # Get updated user
+            updated_user = await users.find_one({"_id": object_id})
+            updated_user["_id"] = str(updated_user["_id"])
+            
+            # Generate JWT token
+            token = jwt.encode({"_id": str(updated_user["_id"])}, TOKEN_KEY, algorithm="HS256")
+            
+            return {
+                "success": True,
+                "message": "Onboarding completed successfully",
+                "data": {
+                    "user_id": str(updated_user["_id"]),
+                    "name": updated_user.get("name"),
+                    "email": updated_user.get("email"),
+                    "age": updated_user.get("age"),
+                    "gender": updated_user.get("gender"),
+                    "language": updated_user.get("language"),
+                    "purpose": updated_user.get("purpose"),
+                    "profile_completed": updated_user.get("profile_completed", True),
+                    "token": token
+                }
+            }
+            
+        except Exception as error:
+            print(f"ERROR = {error}")
+            if isinstance(error, HTTPException):
+                raise error
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to complete onboarding"
+            )

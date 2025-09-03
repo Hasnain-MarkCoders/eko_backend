@@ -14,6 +14,12 @@ class UserModel(BaseModel):
     type: str = "user"
     notificationToken: Optional[str] = ""
     isDeleted: bool = False
+    # Onboarding fields
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    language: Optional[str] = None
+    purpose: Optional[str] = None
+    profile_completed: bool = False
     createdAt: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     deletedAt: Optional[datetime] = None
@@ -45,6 +51,12 @@ class UserResponse(BaseModel):
     type: str
     notificationToken: Optional[str]
     isDeleted: bool
+    # Onboarding fields
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    language: Optional[str] = None
+    purpose: Optional[str] = None
+    profile_completed: bool = False
     createdAt: datetime
     updatedAt: datetime
     deletedAt: Optional[datetime] = None
