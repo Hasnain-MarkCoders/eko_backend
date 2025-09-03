@@ -1,6 +1,7 @@
 # Eko Backend - Local Development Instructions
 
 This document provides step-by-step instructions for running the Eko Backend API locally using Docker.
+For API Documentation refer to API_DOCUMENTATION.md file
 
 ## Prerequisites
 
