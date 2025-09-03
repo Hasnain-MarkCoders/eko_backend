@@ -19,7 +19,6 @@ class UserModel(BaseModel):
     gender: Optional[str] = None
     language: Optional[str] = None
     purpose: Optional[str] = None
-    profile_completed: bool = False
     createdAt: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     updatedAt: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     deletedAt: Optional[datetime] = None
@@ -56,7 +55,6 @@ class UserResponse(BaseModel):
     gender: Optional[str] = None
     language: Optional[str] = None
     purpose: Optional[str] = None
-    profile_completed: bool = False
     createdAt: datetime
     updatedAt: datetime
     deletedAt: Optional[datetime] = None

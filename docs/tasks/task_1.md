@@ -34,7 +34,7 @@ POST /auth/onboarding
         "gender": "male",
         "language": "english",
         "purpose": "personal assistance",
-        "profile_completed": true,
+        "welcome": false,
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     }
 }
@@ -48,7 +48,10 @@ Update the user model in `models/user.py` to include the new fields:
 - `gender` (string)
 - `language` (string) 
 - `purpose` (string)
-- `profile_completed` (boolean, default: false)
+
+**Note:** Use the existing `welcome` flag (boolean, default: true) to control onboarding flow:
+- `welcome: true` = User needs onboarding
+- `welcome: false` = User has completed onboarding
 
 ### 2. Firebase Integration
 **IMPORTANT**: The `name` field must be updated in Firebase as well, similar to how the `profile/change-name` API works. This ensures consistency between MongoDB and Firebase.
@@ -56,10 +59,10 @@ Update the user model in `models/user.py` to include the new fields:
 ### 3. Controller Implementation
 Create a new method in `controllers/auth_controller.py`:
 - `onboarding()` method to handle the onboarding logic
-- **Check if `profile_completed` is already true** - if so, return error (400 Bad Request)
+- **Check if `welcome` is already false** - if so, return error (400 Bad Request)
 - Validate all required fields
 - Update both MongoDB and Firebase
-- Set `profile_completed` to `true` after successful onboarding
+- Set `welcome` to `false` after successful onboarding
 - Return updated user data with auth token
 
 ### 4. Schema Definition
@@ -95,7 +98,7 @@ Add the new route in `routes/auth.py`:
 | `data.gender` | string | User's gender |
 | `data.language` | string | User's preferred language |
 | `data.purpose` | string | User's purpose for using the app |
-| `data.profile_completed` | boolean | Indicates if user has completed onboarding |
+| `data.welcome` | boolean | Indicates if user needs onboarding (true) or has completed it (false) |
 | `data.token` | string | JWT token for authentication |
 
 ## Validation Rules
@@ -112,7 +115,7 @@ Add the new route in `routes/auth.py`:
 Handle the following error cases:
 - Missing required fields (400 Bad Request)
 - Invalid field values (400 Bad Request)
-- **Profile already completed** (400 Bad Request) - User has already completed onboarding
+- **User already welcomed** (400 Bad Request) - User has already completed onboarding (welcome = false)
 - User not found (404 Not Found)
 - Firebase update failure (500 Internal Server Error)
 - MongoDB update failure (500 Internal Server Error)
@@ -121,7 +124,7 @@ Handle the following error cases:
 
 Create test cases for:
 - Successful onboarding with valid data
-- **Profile already completed error** - User tries to onboard when already completed
+- **User already welcomed error** - User tries to onboard when already completed (welcome = false)
 - Validation errors for missing fields
 - Validation errors for invalid field values
 - Firebase integration testing

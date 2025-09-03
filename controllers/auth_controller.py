@@ -212,11 +212,11 @@ class AuthController:
                     detail="User not found"
                 )
             
-            # Check if profile is already completed
-            if current_user.get("profile_completed", False):
+            # Check if user has already been welcomed (onboarding completed)
+            if not current_user.get("welcome", True):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Profile already completed. Onboarding can only be done once."
+                    detail="User has already completed onboarding. Welcome flag is false."
                 )
             
             # Check if user is deleted
@@ -249,7 +249,7 @@ class AuthController:
                 "gender": gender,
                 "language": language,
                 "purpose": purpose,
-                "profile_completed": True,
+                "welcome": False,  # Set welcome to false after onboarding completion
                 "updatedAt": datetime.now(timezone.utc)
             }
             
@@ -282,7 +282,7 @@ class AuthController:
                     "gender": updated_user.get("gender"),
                     "language": updated_user.get("language"),
                     "purpose": updated_user.get("purpose"),
-                    "profile_completed": updated_user.get("profile_completed", True),
+                    "welcome": updated_user.get("welcome", False),
                     "token": token
                 }
             }
