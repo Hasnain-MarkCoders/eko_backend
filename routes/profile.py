@@ -45,3 +45,7 @@ async def welcome2(current_user: dict = Depends(get_current_user)):
 async def update_token(request: UpdateTokenRequest, current_user: dict = Depends(get_current_user)):
     """Update user's notification token"""
     return await profile_controller.update_token(current_user["_id"], request.notificationToken) 
+
+@router.get("/debug-name/{user_id}")
+async def debug_user_name(user_id: str):
+    return await profile_controller.debug_user_name(user_id)

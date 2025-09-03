@@ -301,3 +301,45 @@ class ProfileController:
             "message": "Notification Token Updated Successfully",
             "user": updated_user
         }
+
+    async def debug_user_name(self, user_id: str):
+        # Debug: Compare display name in MongoDB vs Firebase
+        try:
+            # Convert user_id to ObjectId
+            object_id = ObjectId(user_id)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid user ID format"
+            )
+
+        # Get user from MongoDB
+        mongo_user = await users.find_one({"_id": object_id})
+        if not mongo_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found in MongoDB"
+            )
+
+        firebase_name = None
+        firebase_uid = mongo_user.get("uid")
+
+        # Fetch displayName from Firebase
+        if firebase_uid:
+            try:
+                firebase_user = self.admin.auth.get_user(firebase_uid)
+                firebase_name = firebase_user.display_name
+            except Exception as e:
+                firebase_name = f"❌ Failed to fetch from Firebase: {e}"
+
+        return {
+            "mongo": {
+                "uid": firebase_uid,
+                "name": mongo_user.get("name"),
+                "email": mongo_user.get("email")
+            },
+            "firebase": {
+                "uid": firebase_uid,
+                "display_name": firebase_name
+            }
+        }
