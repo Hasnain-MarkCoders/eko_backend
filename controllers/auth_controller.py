@@ -81,6 +81,9 @@ class AuthController:
                 }
             }
             
+        except HTTPException:
+            # Re-raise HTTPExceptions (like email already exists from MongoDB check)
+            raise
         except Exception as error:
             print(f"ERROR = {error}")
             if "EMAIL_EXISTS" in str(error):
@@ -155,6 +158,9 @@ class AuthController:
                 }
             }
             
+        except HTTPException:
+            # Re-raise HTTPExceptions (like user not found, account deleted, etc.)
+            raise
         except Exception as error:
             print(f"ERROR = {error}")
             raise HTTPException(
