@@ -48,7 +48,12 @@ ssh -i $SSH_KEY $SSH_USER@$SERVER_IP << EOF
   
   echo "🔄 Running restart script..."
   echo "=> ./restart.sh -y $FORCE_FLAG"
-  ./restart.sh -y $FORCE_FLAG
+  echo ""
+  echo "📋 Restart script output (this may take a few minutes):"
+  echo "=================================================="
+  ./restart.sh -y $FORCE_FLAG 2>&1
+  echo "=================================================="
+  echo "✅ Restart script completed"
   
   echo "⏳ Waiting for container to start..."
   echo "=> sleep 10"
