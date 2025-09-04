@@ -1,0 +1,1290 @@
+openapi: 3.0.3
+info:
+  title: EKO Chatbot API
+  description: Complete API documentation for EKO Chatbot application
+  version: 1.0.0
+  contact:
+    name: EKO API Support
+    email: support@eko.com
+
+servers:
+  - url: https://api.eko.com/v1
+    description: Production server
+  - url: https://staging-api.eko.com/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User Login
+      description: Authenticate user with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: userpassword123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Create Account / Sign Up
+      description: Create new user account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - confirm_password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: userpassword123
+                confirm_password:
+                  type: string
+                  example: userpassword123
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /auth/onboarding:
+    post:
+      tags:
+        - Authentication
+      summary: User Onboarding
+      description: Complete user onboarding process with personal details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - age
+                - gender
+                - language
+                - purpose
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                age:
+                  type: integer
+                  example: 25
+                gender:
+                  type: string
+                  example: male
+                language:
+                  type: string
+                  example: english
+                purpose:
+                  type: string
+                  example: personal assistance
+      responses:
+        '200':
+          description: Onboarding completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingResponse'
+
+  /auth/change-password:
+    put:
+      tags:
+        - Authentication
+      summary: Change Password
+      description: Change user password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - current_password
+                - new_password
+                - confirm_password
+              properties:
+                current_password:
+                  type: string
+                  example: oldpassword123
+                new_password:
+                  type: string
+                  example: newpassword456
+                confirm_password:
+                  type: string
+                  example: newpassword456
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordChangeResponse'
+
+  /auth/forgot-password:
+    post:
+      tags:
+        - Authentication
+      summary: Forgot Password
+      description: Send password reset email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        '200':
+          description: Password reset email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForgotPasswordResponse'
+
+  /chat/suggestions:
+    get:
+      tags:
+        - Chat
+      summary: Get Chat Suggestions
+      description: Retrieve available chat suggestion options
+      responses:
+        '200':
+          description: Chat suggestions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatSuggestionsResponse'
+
+  /chat/saved:
+    get:
+      tags:
+        - Chat
+      summary: Get Saved Chats
+      description: Retrieve user's saved chat conversations
+      responses:
+        '200':
+          description: Saved chats retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedChatsResponse'
+
+  /chat/create:
+    post:
+      tags:
+        - Chat
+      summary: Create New Chat
+      description: Create a new chat conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - short_description
+                - is_temporary
+              properties:
+                title:
+                  type: string
+                  example: New Programming Discussion
+                short_description:
+                  type: string
+                  example: Help with JavaScript concepts
+                is_temporary:
+                  type: boolean
+                  example: false
+      responses:
+        '201':
+          description: Chat created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateChatResponse'
+
+  /chat/{chat_id}/messages:
+    get:
+      tags:
+        - Chat
+      summary: Get Conversation Messages
+      description: Retrieve paginated messages from a chat conversation
+      parameters:
+        - name: chat_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: chat_789
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            example: 20
+      responses:
+        '200':
+          description: Conversation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+
+  /chat/{chat_id}/message:
+    post:
+      tags:
+        - Chat
+      summary: Send Message to Chatbot
+      description: Send a message to the chatbot in a specific chat
+      parameters:
+        - name: chat_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: chat_789
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chat_id
+                - message
+              properties:
+                chat_id:
+                  type: string
+                  example: chat_789
+                message:
+                  type: string
+                  example: Can you explain closures in JavaScript?
+                pictures:
+                  type: array
+                  items:
+                    type: string
+                  example: ["image_url_1", "image_url_2"]
+                voices:
+                  type: array
+                  items:
+                    type: string
+                  example: ["voice_url_1"]
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMessageResponse'
+
+  /chat/{chat_id}:
+    delete:
+      tags:
+        - Chat
+      summary: Delete Chat
+      description: Delete a specific chat conversation
+      parameters:
+        - name: chat_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: chat_789
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chat_id
+              properties:
+                chat_id:
+                  type: string
+                  example: chat_789
+      responses:
+        '200':
+          description: Chat deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteChatResponse'
+
+  /chat/all:
+    delete:
+      tags:
+        - Chat
+      summary: Delete All Chats
+      description: Delete all user chats
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_auth_token
+              properties:
+                user_auth_token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: All chats deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAllChatsResponse'
+
+  /message/{message_id}:
+    put:
+      tags:
+        - Messages
+      summary: Update Message
+      description: Update a specific message
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: msg_003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message_id
+                - message
+              properties:
+                message_id:
+                  type: string
+                  example: msg_003
+                message:
+                  type: string
+                  example: Updated message content
+                pictures:
+                  type: array
+                  items:
+                    type: string
+                  example: ["new_image_url_1"]
+                voices:
+                  type: array
+                  items:
+                    type: string
+                  example: ["new_voice_url_1"]
+      responses:
+        '200':
+          description: Message updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateMessageResponse'
+    delete:
+      tags:
+        - Messages
+      summary: Delete Message
+      description: Delete a specific message
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: msg_003
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message_id
+              properties:
+                message_id:
+                  type: string
+                  example: msg_003
+      responses:
+        '200':
+          description: Message deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteMessageResponse'
+
+  /upload/message-assets:
+    post:
+      tags:
+        - Upload
+      summary: Upload Message Assets
+      description: Upload images and voice files for messages
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - files
+                - asset_type
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                asset_type:
+                  type: string
+                  enum: [image, voice]
+                  example: image
+      responses:
+        '200':
+          description: Message assets uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadAssetsResponse'
+
+  /user/profile:
+    get:
+      tags:
+        - User
+      summary: Get User Profile
+      description: Retrieve user profile information
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+
+  /user/account:
+    delete:
+      tags:
+        - User
+      summary: Delete User Account
+      description: Delete user account (authenticated request)
+      responses:
+        '200':
+          description: User account deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAccountResponse'
+
+  /user/profile-picture:
+    put:
+      tags:
+        - User
+      summary: Update Profile Picture
+      description: Update user profile picture
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - profile_picture
+              properties:
+                profile_picture:
+                  type: string
+                  example: new_profile_pic_url
+      responses:
+        '200':
+          description: Profile picture updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateProfilePictureResponse'
+
+  /user/upload-profile-picture:
+    post:
+      tags:
+        - User
+      summary: Upload Profile Picture
+      description: Upload new profile picture file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - profile_picture
+              properties:
+                profile_picture:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile picture uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadProfilePictureResponse'
+
+  /user/insights:
+    get:
+      tags:
+        - User
+      summary: Get User Insights
+      description: Get user insights based on conversation history
+      responses:
+        '200':
+          description: User insights retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInsightsResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login successful
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "12345"
+            email:
+              type: string
+              example: user@example.com
+            name:
+              type: string
+              example: John Doe
+            profile_picture:
+              type: string
+              example: https://storage.example.com/profiles/12345_profile.jpg
+            age:
+              type: integer
+              example: 25
+            gender:
+              type: string
+              example: male
+            language:
+              type: string
+              example: english
+            purpose:
+              type: string
+              example: personal assistance
+            auth_token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            onboarding_required:
+              type: boolean
+              example: false
+
+    SignupResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Account created successfully
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "12345"
+            email:
+              type: string
+              example: user@example.com
+            name:
+              type: string
+              nullable: true
+              example: null
+            profile_picture:
+              type: string
+              nullable: true
+              example: null
+            age:
+              type: integer
+              nullable: true
+              example: null
+            gender:
+              type: string
+              nullable: true
+              example: null
+            language:
+              type: string
+              nullable: true
+              example: null
+            purpose:
+              type: string
+              nullable: true
+              example: null
+            auth_token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            onboarding_required:
+              type: boolean
+              example: true
+
+    OnboardingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Onboarding completed successfully
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "12345"
+            profile_completed:
+              type: boolean
+              example: true
+            auth_token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    PasswordChangeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Password changed successfully
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "12345"
+            password_changed_at:
+              type: string
+              format: date-time
+              example: 2025-07-31T10:25:00Z
+
+    ForgotPasswordResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Password reset email sent successfully
+        data:
+          type: object
+          properties:
+            email:
+              type: string
+              example: user@example.com
+            reset_token_sent:
+              type: boolean
+              example: true
+            expires_in:
+              type: string
+              example: 1 hour
+
+    ChatSuggestionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Chat suggestions retrieved successfully
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                example: Help with coding
+              value:
+                type: string
+                example: coding_help
+
+    SavedChatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Saved chats retrieved successfully
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              chat_id:
+                type: string
+                example: chat_123
+              title:
+                type: string
+                example: Programming Help
+              short_description:
+                type: string
+                example: Discussion about Python programming
+
+    CreateChatResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Chat created successfully
+        data:
+          type: object
+          properties:
+            chat_id:
+              type: string
+              example: chat_789
+            title:
+              type: string
+              example: New Programming Discussion
+            short_description:
+              type: string
+              example: Help with JavaScript concepts
+            is_temporary:
+              type: boolean
+              example: false
+            created_at:
+              type: string
+              format: date-time
+              example: 2025-07-31T10:00:00Z
+
+    ConversationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Conversation retrieved successfully
+        data:
+          type: object
+          properties:
+            messages:
+              type: array
+              items:
+                type: object
+                properties:
+                  message_id:
+                    type: string
+                    example: msg_001
+                  chat_id:
+                    type: string
+                    example: chat_789
+                  sender:
+                    type: string
+                    enum: [user, bot]
+                    example: user
+                  message:
+                    type: string
+                    example: Hello, can you help me with JavaScript?
+                  pictures:
+                    type: array
+                    items:
+                      type: string
+                    example: []
+                  voices:
+                    type: array
+                    items:
+                      type: string
+                    example: []
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2025-07-31T10:01:00Z
+            pagination:
+              type: object
+              properties:
+                current_page:
+                  type: integer
+                  example: 1
+                total_pages:
+                  type: integer
+                  example: 5
+                total_messages:
+                  type: integer
+                  example: 100
+                has_next:
+                  type: boolean
+                  example: true
+
+    SendMessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Message sent successfully
+        data:
+          type: object
+          properties:
+            message_id:
+              type: string
+              example: msg_003
+            chat_id:
+              type: string
+              example: chat_789
+            sender:
+              type: string
+              example: user
+            message:
+              type: string
+              example: Can you explain closures in JavaScript?
+            pictures:
+              type: array
+              items:
+                type: string
+              example: ["image_url_1", "image_url_2"]
+            voices:
+              type: array
+              items:
+                type: string
+              example: ["voice_url_1"]
+            timestamp:
+              type: string
+              format: date-time
+              example: 2025-07-31T10:05:00Z
+            bot_response:
+              type: object
+              properties:
+                message_id:
+                  type: string
+                  example: msg_004
+                chat_id:
+                  type: string
+                  example: chat_789
+                sender:
+                  type: string
+                  example: bot
+                message:
+                  type: string
+                  example: A closure in JavaScript is a function that has access to variables in its outer scope even after the outer function has returned...
+                pictures:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+                voices:
+                  type: array
+                  items:
+                    type: string
+                  example: []
+                timestamp:
+                  type: string
+                  format: date-time
+                  example: 2025-07-31T10:05:15Z
+
+    DeleteChatResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Chat deleted successfully
+        data:
+          type: object
+          properties:
+            deleted_chat_id:
+              type: string
+              example: chat_789
+
+    DeleteAllChatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: All chats deleted successfully
+        data:
+          type: object
+          properties:
+            deleted_chats_count:
+              type: integer
+              example: 15
+
+    UpdateMessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Message updated successfully
+        data:
+          type: object
+          properties:
+            message_id:
+              type: string
+              example: msg_003
+            updated_message:
+              type: string
+              example: Updated message content
+            pictures:
+              type: array
+              items:
+                type: string
+              example: ["new_image_url_1"]
+            voices:
+              type: array
+              items:
+                type: string
+              example: ["new_voice_url_1"]
+            updated_at:
+              type: string
+              format: date-time
+              example: 2025-07-31T10:10:00Z
+
+    DeleteMessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Message deleted successfully
+        data:
+          type: object
+          properties:
+            deleted_message_id:
+              type: string
+              example: msg_003
+
+    UploadAssetsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Message assets uploaded successfully
+        data:
+          type: object
+          properties:
+            uploaded_files:
+              type: array
+              items:
+                type: object
+                properties:
+                  file_name:
+                    type: string
+                    example: image1.jpg
+                  file_url:
+                    type: string
+                    example: https://s3.bucket.com/uploads/image1.jpg
+                  file_type:
+                    type: string
+                    example: image
+
+    UserProfileResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User profile retrieved successfully
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "12345"
+            email:
+              type: string
+              example: user@example.com
+            name:
+              type: string
+              example: John Doe
+            age:
+              type: integer
+              example: 25
+            gender:
+              type: string
+              example: male
+            language:
+              type: string
+              example: english
+            purpose:
+              type: string
+              example: personal assistance
+            profile_picture:
+              type: string
+              example: profile_pic_url
+            created_at:
+              type: string
+              format: date-time
+              example: 2025-07-01T10:00:00Z
+
+    DeleteAccountResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User account deleted successfully
+        data:
+          type: object
+          properties:
+            deleted_user_id:
+              type: string
+              example: "12345"
+            deletion_timestamp:
+              type: string
+              format: date-time
+              example: 2025-07-31T10:15:00Z
+
+    UpdateProfilePictureResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Profile picture updated successfully
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "12345"
+            profile_picture:
+              type: string
+              example: new_profile_pic_url
+            updated_at:
+              type: string
+              format: date-time
+              example: 2025-07-31T10:20:00Z
+
+    UploadProfilePictureResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Profile picture uploaded successfully
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "12345"
+            profile_picture_url:
+              type: string
+              example: https://storage.example.com/profiles/12345_profile.jpg
+            uploaded_at:
+              type: string
+              format: date-time
+              example: 2025-07-31T10:30:00Z
+
+    UserInsightsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User insights retrieved successfully
+        data:
+          type: object
+          properties:
+            mental_readiness:
+              type: object
+              properties:
+                percentage:
+                  type: integer
+                  example: 82
+                status:
+                  type: string
+                  example: Good
+            self_mental_care_consistency:
+              type: object
+              properties:
+                time_spent_this_month:
+                  type: string
+                  example: 2h16min
+                hrv_improvement:
+                  type: string
+                  example: +12%
+                sleep_quality_improvement:
+                  type: string
+                  example: +23%
+            this_weeks_insight:
+              type: array
+              items:
+                type: string
+              example:
+                - You practiced grounding 3 times reducing stress 13%
+                - Your sleep quality improved 15% after 2 deep sessions
+                - Most common feeling was overwhelmed
+            suggestions_for_next_week:
+              type: array
+              items:
+                type: string
+              example:
+                - M/W/F sessions
+                - 20min each
+                - "Focus: calmness and mental control"
+            usage_statistics:
+              type: object
+              properties:
+                total_chats:
+                  type: integer
+                  example: 25
+                total_messages:
+                  type: integer
+                  example: 500
+                daily_average_messages:
+                  type: integer
+                  example: 12
+                weekly_active_days:
+                  type: integer
+                  example: 5
+                monthly_growth:
+                  type: string
+                  example: 15%
+
+  responses:
+    UnauthorizedError:
+      description: Authentication token expired or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Authentication token expired
+              error_code:
+                type: string
+                example: TOKEN_EXPIRED
+              status:
+                type: integer
+                example: 401
+
+    BadRequestError:
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Validation error
+              error_code:
+                type: string
+                example: VALIDATION_ERROR
+              details:
+                type: string
+                example: Detailed error information

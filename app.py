@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from routes import auth, profile, chat
+from routes import auth, profile, chat, message
 from middleware.error_handler import (
     http_exception_handler,
     validation_exception_handler,
@@ -35,6 +35,7 @@ app.add_exception_handler(Exception, general_exception_handler)
 app.include_router(auth.router)
 app.include_router(profile.router)
 app.include_router(chat.router)
+app.include_router(message.router)
 
 @app.get("/")
 async def root(request: Request):

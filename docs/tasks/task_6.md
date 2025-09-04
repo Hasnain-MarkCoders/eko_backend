@@ -22,13 +22,19 @@ The EKO mobile application is a conversational psychological assistant similar t
 ## 🚀 **Phase 1: Core Chat APIs (Current Focus)**
 
 ### **Required Endpoints**
-1. **Create New Chat** - `POST /api/chat/create`
-2. **Delete Specific Chat** - `DELETE /api/chat/{chat_id}`
-3. **Delete All User Chats** - `DELETE /api/chat/all`
 
-### **Future Endpoints (Phase 2)**
-4. **Fetch User Chats** - `GET /api/chat/list`
-5. **Get Chat History** - `GET /api/chat/{chat_id}/history`
+#### **Chat Management**
+1. **Create New Chat** - `POST /chat/create`
+2. **Delete Specific Chat** - `DELETE /chat/{chat_id}`
+3. **Delete All User Chats** - `DELETE /chat/all`
+4. **Get Chat Suggestions** - `GET /chat/suggestions`
+5. **Get Saved Chats** - `GET /chat/saved`
+
+#### **Message Management**
+6. **Get Conversation Messages** - `GET /chat/{chat_id}/messages`
+7. **Send Message to Bot** - `POST /chat/{chat_id}/message`
+8. **Update Message** - `PUT /message/{message_id}`
+9. **Delete Message** - `DELETE /message/{message_id}`
 
 ## 🏗️ **Implementation Plan**
 
@@ -50,16 +56,19 @@ The EKO mobile application is a conversational psychological assistant similar t
 }
 ```
 
-#### **Message Collection Structure** (Future)
+#### **Message Collection Structure** (Implemented)
 ```json
 {
   "_id": "ObjectId",
   "chatId": "ObjectId", // Reference to chats collection
   "userId": "ObjectId", // Reference to users collection
-  "role": "string", // "user", "assistant", "system"
-  "content": "string", // Message content
+  "sender": "string", // "user", "bot", "system"
+  "message": "string", // Message content
+  "pictures": ["array"], // Array of picture URLs
+  "voices": ["array"], // Array of voice URLs
   "timestamp": "datetime",
-  "isDeleted": "boolean"
+  "isDeleted": "boolean",
+  "updatedAt": "datetime"
 }
 ```
 
@@ -71,26 +80,52 @@ The EKO mobile application is a conversational psychological assistant similar t
 - `CreateChatRequest` - Request validation
 - `DeleteChatRequest` - Request validation
 
+#### **Message Model** (`models/message.py`)
+- `MessageModel` - Database model
+- `MessageResponse` - API response model
+- `SendMessageRequest` - Request validation
+- `UpdateMessageRequest` - Request validation
+- `ConversationResponse` - Paginated conversation response
+
 ### **Step 3: Controller Implementation**
 
 #### **Chat Controller** (`controllers/chat_controller.py`)
-- `create_chat()` - Create new chat with auto-generated name
+- `create_chat()` - Create new chat with title and description
 - `delete_chat()` - Delete specific chat (soft delete)
 - `delete_all_chats()` - Delete all user chats (soft delete)
-- `generate_chat_name()` - OpenAI integration for name generation
+- `get_chat_suggestions()` - Get predefined chat suggestions
+- `get_saved_chats()` - Get user's saved chat conversations
+
+#### **Message Controller** (`controllers/message_controller.py`)
+- `get_conversation_messages()` - Get paginated conversation history
+- `send_message()` - Send message to EKO bot and get response
+- `update_message()` - Update specific message content
+- `delete_message()` - Delete specific message (soft delete)
+- `_generate_bot_response()` - Generate EKO bot response using OpenAI
 
 ### **Step 4: Route Implementation**
 
 #### **Chat Routes** (`routes/chat.py`)
-- `POST /api/chat/create` - Create new chat
-- `DELETE /api/chat/{chat_id}` - Delete specific chat
-- `DELETE /api/chat/all` - Delete all user chats
+- `GET /chat/suggestions` - Get chat suggestion options
+- `GET /chat/saved` - Get user's saved chats
+- `POST /chat/create` - Create new chat
+- `DELETE /chat/{chat_id}` - Delete specific chat
+- `DELETE /chat/all` - Delete all user chats
+
+#### **Message Routes** (`routes/chat.py` and `routes/message.py`)
+- `GET /chat/{chat_id}/messages` - Get conversation with pagination
+- `POST /chat/{chat_id}/message` - Send message to EKO bot
+- `PUT /message/{message_id}` - Update specific message
+- `DELETE /message/{message_id}` - Delete specific message
 
 ### **Step 5: OpenAI Integration**
 
 #### **OpenAI Service** (`services/openai.py`)
 - Chat name generation using ChatGPT API
-- Fallback to default naming if API fails
+- EKO bot response generation with psychological assistant personality
+- Multilingual support (English/French) for bot responses
+- Conversation context awareness
+- Fallback responses when API fails
 - Environment variable configuration
 
 ## 🔧 **Technical Requirements**
@@ -105,6 +140,12 @@ The EKO mobile application is a conversational psychological assistant similar t
 db.chats.createIndex({ "userId": 1, "isDeleted": 1 })
 db.chats.createIndex({ "userId": 1, "lastMessageAt": -1 })
 db.chats.createIndex({ "status": 1 })
+
+// Messages collection indexes
+db.messages.createIndex({ "chatId": 1, "isDeleted": 1 })
+db.messages.createIndex({ "chatId": 1, "timestamp": -1 })
+db.messages.createIndex({ "userId": 1 })
+db.messages.createIndex({ "sender": 1 })
 ```
 
 ### **Authentication**
@@ -119,14 +160,58 @@ db.chats.createIndex({ "status": 1 })
 
 ## 📊 **API Specifications**
 
-### **1. Create New Chat**
+### **Chat Management APIs**
+
+#### **1. Get Chat Suggestions**
 ```http
-POST /api/chat/create
+GET /chat/suggestions
+Authorization: Bearer <jwt_token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Chat suggestions retrieved successfully",
+  "data": [
+    {"title": "Help with coding", "value": "coding_help"},
+    {"title": "Mental health support", "value": "mental_health"},
+    {"title": "General conversation", "value": "general_chat"}
+  ]
+}
+```
+
+#### **2. Get Saved Chats**
+```http
+GET /chat/saved
+Authorization: Bearer <jwt_token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Saved chats retrieved successfully",
+  "data": [
+    {
+      "chat_id": "string",
+      "title": "string",
+      "short_description": "string"
+    }
+  ]
+}
+```
+
+#### **3. Create New Chat**
+```http
+POST /chat/create
 Authorization: Bearer <jwt_token>
 Content-Type: application/json
 
 {
-  "name": "optional_custom_name" // If not provided, will be auto-generated
+  "title": "New Programming Discussion",
+  "short_description": "Help with JavaScript concepts",
+  "is_temporary": false
 }
 ```
 
@@ -137,17 +222,18 @@ Content-Type: application/json
   "message": "Chat created successfully",
   "data": {
     "chatId": "string",
-    "name": "string",
-    "isAutoNamed": boolean,
+    "title": "string",
+    "short_description": "string",
+    "is_temporary": boolean,
     "createdAt": "datetime",
     "messageCount": 0
   }
 }
 ```
 
-### **2. Delete Specific Chat**
+#### **4. Delete Specific Chat**
 ```http
-DELETE /api/chat/{chat_id}
+DELETE /chat/{chat_id}
 Authorization: Bearer <jwt_token>
 ```
 
@@ -163,9 +249,9 @@ Authorization: Bearer <jwt_token>
 }
 ```
 
-### **3. Delete All User Chats**
+#### **5. Delete All User Chats**
 ```http
-DELETE /api/chat/all
+DELETE /chat/all
 Authorization: Bearer <jwt_token>
 ```
 
@@ -181,29 +267,178 @@ Authorization: Bearer <jwt_token>
 }
 ```
 
-## 🎨 **Chat Name Generation Strategy**
+### **Message Management APIs**
 
-### **Auto-Generation Logic**
-1. **User provides custom name**: Use provided name, set `isAutoNamed: false`
-2. **No name provided**: Generate using OpenAI with context:
-   - User's language preference
-   - Current timestamp
-   - Generic psychological assistant context
-
-### **OpenAI Prompt Template**
-```
-Generate a short, friendly chat session name for a psychological assistant app. 
-The user is starting a new conversation. 
-Language: {user_language}
-Context: Psychological support and guidance
-Format: 2-4 words, encouraging and welcoming
-Examples: "New Journey", "Fresh Start", "Let's Talk", "New Beginning"
+#### **6. Get Conversation Messages**
+```http
+GET /chat/{chat_id}/messages?page=1&limit=20
+Authorization: Bearer <jwt_token>
 ```
 
-### **Fallback Strategy**
-If OpenAI fails:
-- Use timestamp-based name: "Chat - {date}"
-- Set `isAutoNamed: false` to indicate fallback
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Conversation retrieved successfully",
+  "data": {
+    "messages": [
+      {
+        "messageId": "string",
+        "chatId": "string",
+        "userId": "string",
+        "sender": "user|bot",
+        "message": "string",
+        "pictures": ["array"],
+        "voices": ["array"],
+        "timestamp": "datetime"
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 5,
+      "total_messages": 100,
+      "has_next": true
+    }
+  }
+}
+```
+
+#### **7. Send Message to EKO Bot**
+```http
+POST /chat/{chat_id}/message
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "message": "Hello EKO, I am feeling stressed today. Can you help me?",
+  "pictures": [],
+  "voices": []
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Message sent successfully",
+  "data": {
+    "messageId": "string",
+    "chatId": "string",
+    "sender": "user",
+    "message": "string",
+    "pictures": ["array"],
+    "voices": ["array"],
+    "timestamp": "datetime",
+    "bot_response": {
+      "messageId": "string",
+      "chatId": "string",
+      "sender": "bot",
+      "message": "Of course, I'm here to help. I'm sorry to hear you're feeling stressed...",
+      "pictures": [],
+      "voices": [],
+      "timestamp": "datetime"
+    }
+  }
+}
+```
+
+#### **8. Update Message**
+```http
+PUT /message/{message_id}
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "message": "Updated message content",
+  "pictures": ["new_image_url"],
+  "voices": ["new_voice_url"]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Message updated successfully",
+  "data": {
+    "messageId": "string",
+    "updated_message": "string",
+    "pictures": ["array"],
+    "voices": ["array"],
+    "updated_at": "datetime"
+  }
+}
+```
+
+#### **9. Delete Message**
+```http
+DELETE /message/{message_id}
+Authorization: Bearer <jwt_token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Message deleted successfully",
+  "data": {
+    "deleted_message_id": "string"
+  }
+}
+```
+
+## 🤖 **EKO Bot Implementation**
+
+### **Bot Personality & Characteristics**
+- **Empathetic & Supportive** - Provides emotional support and validation
+- **Non-judgmental** - Creates safe space for users to express themselves
+- **Professional yet Warm** - Maintains therapeutic boundaries while being approachable
+- **Conversational** - Responds naturally like a trusted friend
+- **Context-Aware** - Remembers recent conversation history (last 10 messages)
+
+### **Multilingual Support**
+- **English Responses** - Natural, supportive English responses
+- **French Responses** - Culturally appropriate French responses
+- **Language Detection** - Uses user's stored language preference
+
+### **Technical Features**
+- **OpenAI GPT-3.5-turbo** integration for intelligent responses
+- **Conversation Context** - Last 10 messages for context awareness
+- **Fallback System** - Graceful degradation when OpenAI API fails
+- **Response Timeout** - 30-second timeout for API calls
+- **Psychological Focus** - Specialized prompts for mental health support
+
+### **System Prompts**
+
+#### **English Prompt**
+```
+You are EKO, a conversational psychological assistant. You are here to provide emotional support, gentle guidance, and a listening ear.
+
+EKO's characteristics:
+- You are empathetic, understanding, and non-judgmental
+- You encourage expression of emotions and thoughts
+- You provide practical advice for mental well-being
+- You remain professional while being warm and approachable
+- You ask thoughtful questions to better understand
+- You offer relaxation and stress management techniques
+
+Respond naturally and conversationally, as if speaking to a trusted friend. Keep your responses concise but meaningful.
+```
+
+#### **French Prompt**
+```
+Tu es EKO, un assistant psychologique conversationnel. Tu es là pour fournir un soutien émotionnel, des conseils bienveillants et une écoute attentive.
+
+Caractéristiques d'EKO:
+- Tu es empathique, compréhensif et non-jugeant
+- Tu encourages l'expression des émotions et des pensées
+- Tu fournis des conseils pratiques pour le bien-être mental
+- Tu restes professionnel tout en étant chaleureux
+- Tu poses des questions réfléchies pour mieux comprendre
+- Tu offres des techniques de relaxation et de gestion du stress
+
+Réponds de manière naturelle et conversationnelle, comme si tu parlais à un ami de confiance. Garde tes réponses concises mais significatives.
+```
 
 ## 🔗 **Integration Points**
 
@@ -222,27 +457,37 @@ If OpenAI fails:
 
 ## 📝 **Implementation Checklist**
 
-### **Phase 1 (Current)**
-- [ ] Create chat model and schemas
-- [ ] Implement chat controller with 3 core methods
-- [ ] Create chat routes and integrate with app
-- [ ] Add OpenAI service for name generation
-- [ ] Update database.py with chat collection
-- [ ] Add required dependencies
-- [ ] Test all endpoints
+### **Phase 1 (Completed)**
+- [x] Create chat model and schemas
+- [x] Implement chat controller with all methods
+- [x] Create chat routes and integrate with app
+- [x] Add OpenAI service for name generation
+- [x] Update database.py with chat collection
+- [x] Add required dependencies
+- [x] Test all chat endpoints
 
-### **Phase 2 (Future)**
-- [ ] Implement fetch user chats endpoint
-- [ ] Implement get chat history endpoint
-- [ ] Add message model and storage
-- [ ] Implement real-time chat functionality
+### **Phase 2 (Completed)**
+- [x] Implement message model and database collection
+- [x] Implement message controller with full CRUD operations
+- [x] Create message routes and integrate with app
+- [x] Implement EKO bot response generation
+- [x] Add conversation context awareness
+- [x] Implement pagination for conversation history
+- [x] Add multilingual support for bot responses
+- [x] Test all message endpoints
+
+### **Phase 3 (Future)**
+- [ ] Implement file upload for message assets
+- [ ] Add user insights endpoint
+- [ ] Implement real-time chat functionality (WebSockets)
 - [ ] Add chat search and filtering
 - [ ] Implement chat archiving
+- [ ] Add message reactions and emojis
 
 ## 🎯 **Success Criteria**
 
 ### **Phase 1 Complete When:**
-- ✅ All 3 core chat APIs working
+- ✅ All 5 chat APIs working
 - ✅ OpenAI integration functional
 - ✅ Proper error handling and validation
 - ✅ Database indexes created
@@ -250,31 +495,60 @@ If OpenAI fails:
 - ✅ Multilingual support
 - ✅ Docker deployment ready
 
+### **Phase 2 Complete When:**
+- ✅ All 4 message APIs working
+- ✅ EKO bot response generation functional
+- ✅ Conversation context awareness working
+- ✅ Pagination for message history
+- ✅ Multilingual bot responses
+- ✅ Message CRUD operations working
+- ✅ Database indexes for messages created
+
 ### **Testing Requirements**
 - Unit tests for all controller methods
 - Integration tests for API endpoints
 - Error scenario testing
 - OpenAI fallback testing
 - Authentication testing
+- Bot response quality testing
+- Conversation context testing
 
 ## 📚 **Related Files**
 
-### **New Files to Create**
+### **New Files Created**
 - `models/chat.py` - Chat data models
+- `models/message.py` - Message data models
 - `controllers/chat_controller.py` - Chat business logic
+- `controllers/message_controller.py` - Message business logic
 - `routes/chat.py` - Chat API routes
+- `routes/message.py` - Message API routes
 - `services/openai.py` - OpenAI integration
 
-### **Files to Modify**
-- `app.py` - Include chat router
-- `database.py` - Add chat collection
+### **Files Modified**
+- `app.py` - Include chat and message routers
+- `database.py` - Add chat and message collections with indexes
 - `requirements.txt` - Add OpenAI dependency
-- `locales/en.json` - Add chat messages
-- `locales/fr.json` - Add French chat messages
+- `locales/en.json` - Add chat and message messages
+- `locales/fr.json` - Add French chat and message messages
 
 ---
 
-**Status**: Ready for implementation
+**Status**: ✅ **COMPLETED**
 **Priority**: High
-**Estimated Time**: 4-6 hours
+**Estimated Time**: 8-10 hours (Completed)
 **Dependencies**: OpenAI API key, existing auth system
+
+## 🎉 **Implementation Summary**
+
+### **✅ Completed Features**
+1. **Complete Chat Management System** - Create, read, delete chats with suggestions
+2. **Full Message System** - Send, receive, update, delete messages with pagination
+3. **EKO Bot Integration** - Intelligent psychological assistant with OpenAI
+4. **Multilingual Support** - English and French responses
+5. **Database Optimization** - Proper indexes for performance
+6. **Authentication & Security** - JWT-based user authentication
+7. **Error Handling** - Comprehensive error responses
+8. **API Documentation** - Complete Swagger-compliant endpoints
+
+### **🚀 Ready for Frontend Integration**
+The EKO chat system is now fully functional and ready for the mobile app team to integrate. All endpoints are tested and working correctly with proper authentication and error handling.

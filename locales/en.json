@@ -88,11 +88,27 @@
       "success": "Saved chats retrieved successfully"
     }
   },
+  "message": {
+    "conversation": {
+      "success": "Conversation retrieved successfully"
+    },
+    "send": {
+      "success": "Message sent successfully"
+    },
+    "update": {
+      "success": "Message updated successfully"
+    },
+    "delete": {
+      "success": "Message deleted successfully"
+    },
+    "not_found": "Message not found"
+  },
   "general": {
     "welcome": "Welcome to Eko Backend API",
     "health": "API is healthy",
     "invalid_user_id": "Invalid user ID format",
     "invalid_chat_id": "Invalid chat ID format",
+    "invalid_message_id": "Invalid message ID format",
     "user_not_found": "User not found",
     "internal_error": "Internal server error",
     "validation_error": "Validation error",

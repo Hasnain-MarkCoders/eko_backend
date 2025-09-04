@@ -466,6 +466,273 @@ GET /profile/debug-name/{user_id}
 }
 ```
 
+### Chat Management Endpoints
+
+#### Get Chat Suggestions
+```http
+GET /chat/suggestions
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Chat suggestions retrieved successfully",
+  "data": [
+    {"title": "Help with coding", "value": "coding_help"},
+    {"title": "Mental health support", "value": "mental_health"},
+    {"title": "General conversation", "value": "general_chat"},
+    {"title": "Learning assistance", "value": "learning_help"},
+    {"title": "Problem solving", "value": "problem_solving"}
+  ]
+}
+```
+
+#### Get Saved Chats
+```http
+GET /chat/saved
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Saved chats retrieved successfully",
+  "data": [
+    {
+      "chat_id": "68ba031cda9127adb68239a8",
+      "title": "Test Chat",
+      "short_description": "Testing message functionality"
+    }
+  ]
+}
+```
+
+#### Create New Chat
+```http
+POST /chat/create
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "title": "New Programming Discussion",
+  "short_description": "Help with JavaScript concepts",
+  "is_temporary": false
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Chat created successfully",
+  "data": {
+    "chatId": "68ba031cda9127adb68239a8",
+    "title": "New Programming Discussion",
+    "short_description": "Help with JavaScript concepts",
+    "is_temporary": false,
+    "status": "active",
+    "createdAt": "2025-09-04T21:22:36.622858Z",
+    "updatedAt": "2025-09-04T21:22:36.622865Z",
+    "lastMessageAt": "2025-09-04T21:22:36.622868Z",
+    "messageCount": 0,
+    "isDeleted": false
+  }
+}
+```
+
+#### Delete Specific Chat
+```http
+DELETE /chat/{chat_id}
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Chat deleted successfully",
+  "data": {
+    "chatId": "68ba031cda9127adb68239a8",
+    "deletedAt": "2025-09-04T21:22:36.622858Z"
+  }
+}
+```
+
+#### Delete All User Chats
+```http
+DELETE /chat/all
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "All chats deleted successfully",
+  "data": {
+    "deletedCount": 2,
+    "deletedAt": "2025-09-04T21:22:36.622858Z"
+  }
+}
+```
+
+### Message Management Endpoints
+
+#### Get Conversation Messages
+```http
+GET /chat/{chat_id}/messages?page=1&limit=20
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Parameters:**
+- `chat_id` (path): The chat ID to get messages from
+- `page` (query): Page number (default: 1)
+- `limit` (query): Number of messages per page (default: 20, max: 100)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Conversation retrieved successfully",
+  "data": {
+    "messages": [
+      {
+        "messageId": "68ba0326da9127adb68239aa",
+        "chatId": "68ba031cda9127adb68239a8",
+        "userId": "68b8e928f9872144cc79cf59",
+        "sender": "bot",
+        "message": "Of course, I'm here to help. I'm sorry to hear you're feeling stressed...",
+        "pictures": [],
+        "voices": [],
+        "timestamp": "2025-09-04T21:22:46.349000Z",
+        "isDeleted": false,
+        "updatedAt": "2025-09-04T21:22:46.349000Z"
+      },
+      {
+        "messageId": "68ba0323da9127adb68239a9",
+        "chatId": "68ba031cda9127adb68239a8",
+        "userId": "68b8e928f9872144cc79cf59",
+        "sender": "user",
+        "message": "Hello EKO, I am feeling stressed today. Can you help me?",
+        "pictures": [],
+        "voices": [],
+        "timestamp": "2025-09-04T21:22:43.683000Z",
+        "isDeleted": false,
+        "updatedAt": "2025-09-04T21:22:43.683000Z"
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 1,
+      "total_messages": 2,
+      "has_next": false
+    }
+  }
+}
+```
+
+#### Send Message to EKO Bot
+```http
+POST /chat/{chat_id}/message
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "message": "Hello EKO, I am feeling stressed today. Can you help me?",
+  "pictures": [],
+  "voices": []
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Message sent successfully",
+  "data": {
+    "messageId": "68ba0323da9127adb68239a9",
+    "chatId": "68ba031cda9127adb68239a8",
+    "sender": "user",
+    "message": "Hello EKO, I am feeling stressed today. Can you help me?",
+    "pictures": [],
+    "voices": [],
+    "timestamp": "2025-09-04T21:22:43.683252Z",
+    "bot_response": {
+      "messageId": "68ba0326da9127adb68239aa",
+      "chatId": "68ba031cda9127adb68239a8",
+      "sender": "bot",
+      "message": "Of course, I'm here to help. I'm sorry to hear you're feeling stressed. Would you like to talk about what's been causing you stress or how it's been affecting you today?",
+      "pictures": [],
+      "voices": [],
+      "timestamp": "2025-09-04T21:22:46.349692Z"
+    }
+  }
+}
+```
+
+#### Update Message
+```http
+PUT /message/{message_id}
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+```json
+{
+  "message": "Updated message content",
+  "pictures": ["new_image_url"],
+  "voices": ["new_voice_url"]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Message updated successfully",
+  "data": {
+    "messageId": "68ba0323da9127adb68239a9",
+    "updated_message": "Updated message content",
+    "pictures": ["new_image_url"],
+    "voices": ["new_voice_url"],
+    "updated_at": "2025-09-04T21:22:50.123456Z"
+  }
+}
+```
+
+#### Delete Message
+```http
+DELETE /message/{message_id}
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Message deleted successfully",
+  "data": {
+    "deleted_message_id": "68ba0323da9127adb68239a9"
+  }
+}
+```
+
 ### Utility Endpoints
 
 #### API Welcome Message

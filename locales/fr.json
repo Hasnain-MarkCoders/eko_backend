@@ -88,11 +88,27 @@
       "success": "Chats sauvegardés récupérés avec succès"
     }
   },
+  "message": {
+    "conversation": {
+      "success": "Conversation récupérée avec succès"
+    },
+    "send": {
+      "success": "Message envoyé avec succès"
+    },
+    "update": {
+      "success": "Message mis à jour avec succès"
+    },
+    "delete": {
+      "success": "Message supprimé avec succès"
+    },
+    "not_found": "Message non trouvé"
+  },
   "general": {
     "welcome": "Bienvenue dans l'API Eko Backend",
     "health": "L'API est en bonne santé",
     "invalid_user_id": "Format d'ID utilisateur invalide",
     "invalid_chat_id": "Format d'ID de chat invalide",
+    "invalid_message_id": "Format d'ID de message invalide",
     "user_not_found": "Utilisateur non trouvé",
     "internal_error": "Erreur interne du serveur",
     "validation_error": "Erreur de validation",
