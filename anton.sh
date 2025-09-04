@@ -31,14 +31,24 @@ git add .
 echo "=> git commit -m '$COMMIT_MESSAGE'"
 git commit -m "$COMMIT_MESSAGE"
 echo "=> git push origin main"
-git push origin main
+if ! git push origin main; then
+    echo "❌ Error: Failed to push to GitHub. This could be due to:"
+    echo "   - Network connectivity issues"
+    echo "   - DNS resolution problems"
+    echo "   - GitHub authentication issues"
+    echo "   - Repository access permissions"
+    echo ""
+    echo "Please check your network connection and try again."
+    echo "You can also push manually with: git push origin main"
+    exit 1
+fi
 echo "✅ Step 1 completed: Changes committed and pushed"
 
 # SSH and deploy on production server
 echo "🚀 Step 2/4: Connecting to production server..."
 echo "=> ssh -i $SSH_KEY $SSH_USER@$SERVER_IP"
 
-ssh -i $SSH_KEY $SSH_USER@$SERVER_IP << EOF
+if ! ssh -i $SSH_KEY $SSH_USER@$SERVER_IP << EOF
   set -e
   cd $DEPLOY_PATH
   
@@ -65,8 +75,19 @@ ssh -i $SSH_KEY $SSH_USER@$SERVER_IP << EOF
   
   echo "✅ Deployment completed successfully!"
 EOF
-
-echo "✅ Step 2 completed: Connected to production server"
+then
+    echo "✅ Step 2 completed: Connected to production server"
+else
+    echo "❌ Error: Failed to connect to production server or deployment failed."
+    echo "This could be due to:"
+    echo "   - SSH connection issues"
+    echo "   - Server is down or unreachable"
+    echo "   - SSH key authentication failed"
+    echo "   - Network connectivity problems"
+    echo ""
+    echo "Please check your server connection and SSH key configuration."
+    exit 1
+fi
 echo "✅ Step 3 completed: Pulled latest changes and restarted container"
 echo "✅ Step 4 completed: Verified container is running"
 echo "🎉 All steps completed! Deployment to production server successful!"
