@@ -44,7 +44,7 @@ async def general_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={
             "success": False,
-            "message": "Internal server error",
+            "message": "Internal server error",  # Default English for unhandled errors
             "data": None
         }
     )

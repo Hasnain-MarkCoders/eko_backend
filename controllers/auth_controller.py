@@ -170,21 +170,21 @@ class AuthController:
             if not existing_user:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
+                    detail=get_message(language, "auth.login.user_not_found")
                 )
             
             # Check if user is deleted
             if existing_user.get("isDeleted", False):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Account has been deleted"
+                    detail=get_message(language, "auth.login.account_deleted")
                 )
             
             # Check if user is brand type
             if existing_user.get("type") == "brand":
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Please use Sauced brand panel."
+                    detail=get_message(language, "auth.login.brand_user")
                 )
             
             # Generate password reset link using Firebase
@@ -199,7 +199,7 @@ class AuthController:
                 
                 return {
                     "success": True,
-                    "message": "Password reset email sent successfully",
+                    "message": get_message(language, "auth.forgot_password.success"),
                     "data": {
                         "resetLink": reset_link,
                         "note": "In production, this link would be sent via email"
@@ -210,7 +210,7 @@ class AuthController:
                 print(f"Firebase password reset error: {firebase_error}")
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to generate password reset link"
+                    detail=get_message(language, "auth.forgot_password.reset_failed")
                 )
             
         except Exception as error:
@@ -231,7 +231,7 @@ class AuthController:
             except Exception:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid user ID format"
+                    detail=get_message(user_language, "general.invalid_user_id")
                 )
             
             # Get current user
@@ -239,21 +239,21 @@ class AuthController:
             if not current_user:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
+                    detail=get_message(language, "auth.login.user_not_found")
                 )
             
             # Check if user has already been welcomed (onboarding completed)
             if not current_user.get("welcome", True):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="User has already completed onboarding. Welcome flag is false."
+                    detail=get_message(user_language, "auth.onboarding.already_completed")
                 )
             
             # Check if user is deleted
             if current_user.get("isDeleted", False):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Account has been deleted"
+                    detail=get_message(language, "auth.login.account_deleted")
                 )
             
             # Update name in Firebase first (like profile/change-name API)
@@ -269,7 +269,7 @@ class AuthController:
                     print(f"❌ Firebase update error: {e}")
                     raise HTTPException(
                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail="Failed to update display name in Firebase"
+                        detail=get_message(user_language, "auth.onboarding.firebase_update_failed")
                     )
             
             # Update user in MongoDB with onboarding data
@@ -291,7 +291,7 @@ class AuthController:
             if result.modified_count == 0:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
+                    detail=get_message(language, "auth.login.user_not_found")
                 )
             
             # Get updated user
@@ -303,7 +303,7 @@ class AuthController:
             
             return {
                 "success": True,
-                "message": "Onboarding completed successfully",
+                "message": get_message(user_language, "auth.onboarding.success"),
                 "data": {
                     "user_id": str(updated_user["_id"]),
                     "name": updated_user.get("name"),
@@ -323,5 +323,5 @@ class AuthController:
                 raise error
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to complete onboarding"
+                detail=get_message(user_language, "auth.onboarding.onboarding_failed")
             )

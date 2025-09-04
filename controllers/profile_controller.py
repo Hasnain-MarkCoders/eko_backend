@@ -24,7 +24,7 @@ class ProfileController:
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid user ID format"
+                detail=get_message(language, "general.invalid_user_id")
             )
         
         # Get current user to check existing name and get Firebase UID
@@ -67,7 +67,7 @@ class ProfileController:
         if result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                detail=get_message(language, "general.user_not_found")
             )
         
         # Get updated user
@@ -99,7 +99,7 @@ class ProfileController:
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid user ID format"
+                detail=get_message(language, "general.invalid_user_id")
             )
         
         # Update image in database
@@ -111,7 +111,7 @@ class ProfileController:
         if result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                detail=get_message(language, "general.user_not_found")
             )
         
         # Get updated user
@@ -120,7 +120,7 @@ class ProfileController:
         
         return {
             "success": True,
-            "message": "User Image Changed Successfully",
+            "message": get_message(language, "profile.change_image.success"),
             "data": {
                 "user_id": updated_user["_id"],
                 "name": updated_user["name"],
@@ -139,7 +139,7 @@ class ProfileController:
             except Exception:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid user ID format"
+                    detail=get_message(language, "general.invalid_user_id")
                 )
             
             # Get user details first
@@ -147,14 +147,14 @@ class ProfileController:
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
+                    detail=get_message(language, "general.user_not_found")
                 )
             
             # Check if user is already deleted
             if user.get("isDeleted", False):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="User account is already deleted"
+                    detail=get_message(language, "profile.delete.already_deleted")
                 )
             
             # Generate a unique deleted username to avoid conflicts
@@ -182,7 +182,7 @@ class ProfileController:
             if result.modified_count == 0:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
+                    detail=get_message(language, "general.user_not_found")
                 )
             
             # Delete user from Firebase (hard delete from Firebase)
@@ -197,7 +197,7 @@ class ProfileController:
             
             return {
                 "success": True,
-                "message": "User account deleted successfully",
+                "message": get_message(language, "profile.delete.success"),
                 "data": {
                     "note": "Account has been deactivated and personal information removed. Firebase account has been deleted."
                 }
@@ -209,7 +209,7 @@ class ProfileController:
                 raise e
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to delete user"
+                detail=get_message(language, "general.internal_error")
             )
     
     async def is_active(self, user_id: str, language: str = "en"):
@@ -220,19 +220,19 @@ class ProfileController:
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid user ID format"
+                detail=get_message(language, "general.invalid_user_id")
             )
         
         user = await users.find_one({"_id": object_id})
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                detail=get_message(language, "general.user_not_found")
             )
         
         return {
             "success": True,
-            "message": "User status retrieved successfully",
+            "message": get_message(language, "profile.is_active.success"),
             "data": {
                 "status": user.get("status", "inactive")
             }
@@ -246,20 +246,20 @@ class ProfileController:
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid user ID format"
+                detail=get_message(language, "general.invalid_user_id")
             )
         
         user = await users.find_one({"_id": object_id})
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                detail=get_message(language, "general.user_not_found")
             )
         
         user["_id"] = str(user["_id"])
         return {
             "success": True,
-            "message": "User profile retrieved successfully",
+            "message": get_message(language, "profile.get_user.success"),
             "data": {
                 "user_id": user["_id"],
                 "name": user["name"],
@@ -281,7 +281,7 @@ class ProfileController:
         """Check user's welcome status"""
         return {
             "success": True,
-            "message": "Welcome 1",
+            "message": get_message(language, "profile.welcome.welcome1"),
             "data": None
         }
     
@@ -293,7 +293,7 @@ class ProfileController:
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid user ID format"
+                detail=get_message(language, "general.invalid_user_id")
             )
         
         result = await users.update_one(
@@ -304,7 +304,7 @@ class ProfileController:
         if result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                detail=get_message(language, "general.user_not_found")
             )
         
         # Get updated user
@@ -313,7 +313,7 @@ class ProfileController:
         
         return {
             "success": True,
-            "message": "Welcome 2",
+            "message": get_message(language, "profile.welcome.welcome2"),
             "data": {
                 "user_id": updated_user["_id"],
                 "name": updated_user["name"],
@@ -331,7 +331,7 @@ class ProfileController:
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid user ID format"
+                detail=get_message(language, "general.invalid_user_id")
             )
         
         result = await users.update_one(
@@ -342,7 +342,7 @@ class ProfileController:
         if result.modified_count == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                detail=get_message(language, "general.user_not_found")
             )
         
         # Get updated user
@@ -351,7 +351,7 @@ class ProfileController:
         
         return {
             "success": True,
-            "message": "Notification Token Updated Successfully",
+            "message": get_message(language, "profile.update_token.success"),
             "data": {
                 "user_id": updated_user["_id"],
                 "name": updated_user["name"],
@@ -369,7 +369,7 @@ class ProfileController:
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid user ID format"
+                detail=get_message(language, "general.invalid_user_id")
             )
 
         # Get user from MongoDB
@@ -377,7 +377,7 @@ class ProfileController:
         if not mongo_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found in MongoDB"
+                detail=get_message(language, "profile.debug_name.user_not_found")
             )
 
         firebase_name = None
@@ -393,7 +393,7 @@ class ProfileController:
 
         return {
             "success": True,
-            "message": "Name comparison retrieved successfully",
+            "message": get_message(language, "profile.debug_name.success"),
             "data": {
                 "mongo": {
                     "uid": firebase_uid,
