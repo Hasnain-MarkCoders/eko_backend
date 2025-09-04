@@ -48,7 +48,7 @@ echo "✅ Step 1 completed: Changes committed and pushed"
 echo "🚀 Step 2/4: Connecting to production server..."
 echo "=> ssh -i $SSH_KEY $SSH_USER@$SERVER_IP"
 
-if ! ssh -i $SSH_KEY $SSH_USER@$SERVER_IP << EOF
+ssh -i $SSH_KEY $SSH_USER@$SERVER_IP << EOF
   set -e
   cd $DEPLOY_PATH
   
@@ -75,7 +75,9 @@ if ! ssh -i $SSH_KEY $SSH_USER@$SERVER_IP << EOF
   
   echo "✅ Deployment completed successfully!"
 EOF
-then
+
+# Check if SSH command succeeded
+if [ $? -eq 0 ]; then
     echo "✅ Step 2 completed: Connected to production server"
 else
     echo "❌ Error: Failed to connect to production server or deployment failed."
