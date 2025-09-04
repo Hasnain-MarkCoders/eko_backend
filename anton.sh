@@ -25,31 +25,43 @@ if [ -z "$COMMIT_MESSAGE" ]; then
 fi
 
 # Commit and push changes
-echo "🔄 Committing changes..."
+echo "🔄 Step 1/4: Committing changes..."
+echo "=> git add ."
 git add .
+echo "=> git commit -m '$COMMIT_MESSAGE'"
 git commit -m "$COMMIT_MESSAGE"
+echo "=> git push origin main"
 git push origin main
+echo "✅ Step 1 completed: Changes committed and pushed"
 
 # SSH and deploy on production server
-echo "🚀 Deploying to production server at $SERVER_IP ($DEPLOY_PATH) as $SSH_USER"
+echo "🚀 Step 2/4: Connecting to production server..."
+echo "=> ssh -i $SSH_KEY $SSH_USER@$SERVER_IP"
 
 ssh -i $SSH_KEY $SSH_USER@$SERVER_IP << EOF
   set -e
   cd $DEPLOY_PATH
   
-  echo "📥 Pulling latest changes..."
+  echo "📥 Step 3/4: Pulling latest changes..."
+  echo "=> git pull origin main"
   git pull origin main
   
   echo "🔄 Running restart script..."
+  echo "=> ./restart.sh -y $FORCE_FLAG"
   ./restart.sh -y $FORCE_FLAG
   
   echo "⏳ Waiting for container to start..."
+  echo "=> sleep 10"
   sleep 10
   
-  echo "📋 Verifying container started successfully..."
+  echo "📋 Step 4/4: Verifying container started successfully..."
+  echo "=> docker logs eko_backend_container --tail 20"
   docker logs eko_backend_container --tail 20
   
   echo "✅ Deployment completed successfully!"
 EOF
 
-echo "🎉 Deployment to production server completed!"
+echo "✅ Step 2 completed: Connected to production server"
+echo "✅ Step 3 completed: Pulled latest changes and restarted container"
+echo "✅ Step 4 completed: Verified container is running"
+echo "🎉 All steps completed! Deployment to production server successful!"
