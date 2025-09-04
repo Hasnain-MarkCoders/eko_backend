@@ -127,36 +127,69 @@ class AuthController:
                     detail=get_message(language, "auth.login.user_not_found")
                 )
             
+            # Get user's stored language preference for error messages
+            user_language = existing_user.get("language", "english")
+            # Convert database language (english/french) to locale code (en/fr)
+            if user_language == "french":
+                user_locale = "fr"
+            else:
+                user_locale = "en"
+            
             # Check if user is deleted
             if existing_user.get("isDeleted", False):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=get_message(language, "auth.login.account_deleted")
+                    detail=get_message(user_locale, "auth.login.account_deleted")
                 )
             
             # Check if user is brand type
             if existing_user.get("type") == "brand":
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=get_message(language, "auth.login.brand_user")
+                    detail=get_message(user_locale, "auth.login.brand_user")
                 )
             
-            # For now, we'll use a simple password validation approach
-            # In production, you should either:
-            # 1. Add FIREBASE_API_KEY to use REST API for password verification
-            # 2. Or implement proper password hashing and verification
+            # Verify password with Firebase using REST API
+            firebase_api_key = os.getenv("FIREBASE_API_KEY")
+            if not firebase_api_key:
+                print("❌ FIREBASE_API_KEY not found - cannot verify password")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=get_message(user_locale, "general.internal_error")
+                )
             
-            # Basic password validation - at least require non-empty password
-            if not password or len(password.strip()) < 1:
+            try:
+                import httpx
+                url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebase_api_key}"
+                payload = {
+                    "email": email,
+                    "password": password,
+                    "returnSecureToken": True
+                }
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(url, json=payload)
+                    
+                    if response.status_code != 200:
+                        # Firebase says password is wrong - DO NOT create token
+                        print(f"❌ Firebase password verification failed for {email}")
+                        raise HTTPException(
+                            status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail=get_message(user_locale, "auth.login.invalid_credentials")
+                        )
+                    
+                    # Firebase says password is correct - NOW we can create token
+                    firebase_response = response.json()
+                    print(f"✅ Firebase authentication successful for {email}")
+                    
+            except HTTPException:
+                raise
+            except Exception as e:
+                print(f"❌ Firebase password verification error: {e}")
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=get_message(language, "auth.login.invalid_credentials")
+                    detail=get_message(user_locale, "auth.login.invalid_credentials")
                 )
-            
-            # TODO: Implement proper Firebase password verification
-            # This requires either FIREBASE_API_KEY for REST API or proper password hashing
-            print(f"⚠️ Password verification bypassed - implement proper Firebase auth")
-            print(f"✅ Proceeding with login for {email} (password validation needed)")
             
             # Convert ObjectId to string for serialization
             existing_user["_id"] = str(existing_user["_id"])
@@ -166,7 +199,7 @@ class AuthController:
             
             return {
                 "success": True,
-                "message": get_message(language, "auth.login.success"),
+                "message": get_message(user_locale, "auth.login.success"),
                 "data": {
                     "user_id": existing_user["_id"],
                     "uid": existing_user["uid"],
