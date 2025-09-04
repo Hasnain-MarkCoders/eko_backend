@@ -1,12 +1,12 @@
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Literal
-from .enums import Language
+from .enums import Language, LanguageRequest
 
 class EmailPasswordSignupRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
     confirm_password: str = Field(..., description="Password confirmation")
-    language: Language = Field(default=Language.ENGLISH, description="User's preferred language")
+    language: LanguageRequest = Field(default=LanguageRequest.EN, description="User's preferred language (EN or FR)")
     agreed: bool = Field(..., description="User must agree to privacy policy")
     
     @validator('confirm_password')
@@ -36,7 +36,7 @@ class OnboardingRequest(BaseModel):
     name: str = Field(..., min_length=1, description="User's display name")
     age: int = Field(..., gt=0, le=120, description="User's age")
     gender: Literal["male", "female", "other"] = Field(..., description="User's gender")
-    language: Literal["english", "spanish", "french", "german", "italian", "portuguese", "chinese", "japanese", "korean", "arabic", "hindi"] = Field(..., description="User's preferred language")
+    language: LanguageRequest = Field(..., description="User's preferred language (EN or FR)")
     purpose: Literal["personal assistance", "business", "education", "entertainment", "health", "productivity", "social", "other"] = Field(..., description="User's purpose for using the app")
 
 class OnboardingResponse(BaseModel):

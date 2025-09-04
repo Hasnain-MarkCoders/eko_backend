@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime, timezone
 from locales import get_message
-from schemas.enums import Language
+from schemas.enums import Language, LanguageRequest
 
 load_dotenv()
 
@@ -20,8 +20,10 @@ class AuthController:
     
     async def email_password_signup(self, email: str, password: str, confirm_password: str, language: str, agreed: bool):
         """Email/password signup using Firebase - uses language from request body"""
-        # Convert language enum to locale code for get_message()
-        locale_code = Language.get_locale_code(language)
+        # Convert request language (EN/FR) to database language (english/french)
+        database_language = LanguageRequest.to_database_language(language)
+        # Convert database language to locale code for get_message()
+        locale_code = Language.get_locale_code(database_language)
         
         try:
             # Check if user already exists in database
@@ -54,7 +56,7 @@ class AuthController:
                 "type": "user",
                 "notificationToken": "",
                 "isDeleted": False,
-                "language": language,  # Store user's language preference
+                "language": database_language,  # Store user's language preference (converted to database format)
                 "createdAt": datetime.now(timezone.utc),
                 "updatedAt": datetime.now(timezone.utc)
             }
@@ -235,6 +237,8 @@ class AuthController:
     
     async def onboarding(self, user_id: str, name: str, age: int, gender: str, language: str, purpose: str, user_language: str = "en"):
         """Complete user onboarding with additional profile information - uses user's stored language preference"""
+        # Convert request language (EN/FR) to database language (english/french)
+        database_language = LanguageRequest.to_database_language(language)
         try:
             # Convert string user_id to ObjectId
             try:
@@ -288,7 +292,7 @@ class AuthController:
                 "name": name,
                 "age": age,
                 "gender": gender,
-                "language": language,
+                "language": database_language,
                 "purpose": purpose,
                 "welcome": False,  # Set welcome to false after onboarding completion
                 "updatedAt": datetime.now(timezone.utc)
