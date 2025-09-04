@@ -4,7 +4,7 @@ from .enums import Language, LanguageRequest
 
 class EmailPasswordSignupRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
+    password: str = Field(..., min_length=6, description="Password must be at least 6 characters")
     confirm_password: str = Field(..., description="Password confirmation")
     language: LanguageRequest = Field(default=LanguageRequest.en, description="User's preferred language (en or fr)")
     agreed: bool = Field(..., description="User must agree to privacy policy")

@@ -3,7 +3,7 @@
     "signup": {
       "success": "Utilisateur créé avec succès",
       "email_exists": "Un utilisateur avec cet email existe déjà",
-      "weak_password": "Le mot de passe est trop faible. Utilisez au moins 8 caractères.",
+      "weak_password": "Le mot de passe est trop faible. Utilisez au moins 6 caractères.",
       "passwords_no_match": "Les mots de passe ne correspondent pas",
       "must_agree": "Vous devez accepter la politique de confidentialité pour continuer",
       "invalid_language": "Sélection de langue invalide"
@@ -12,7 +12,8 @@
       "success": "Connexion réussie",
       "user_not_found": "Utilisateur non trouvé",
       "account_deleted": "Le compte a été supprimé",
-      "brand_user": "Veuillez utiliser le panneau de marque Sauced."
+      "brand_user": "Veuillez utiliser le panneau de marque Sauced.",
+      "invalid_credentials": "Email ou mot de passe invalide"
     },
     "forgot_password": {
       "success": "Email de réinitialisation du mot de passe envoyé avec succès",

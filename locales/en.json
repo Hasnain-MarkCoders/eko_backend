@@ -3,7 +3,7 @@
     "signup": {
       "success": "User created successfully",
       "email_exists": "User with this email already exists",
-      "weak_password": "Password is too weak. Use at least 8 characters.",
+      "weak_password": "Password is too weak. Use at least 6 characters.",
       "passwords_no_match": "Passwords do not match",
       "must_agree": "You must agree to the privacy policy to continue",
       "invalid_language": "Invalid language selection"
@@ -12,7 +12,8 @@
       "success": "Login successful",
       "user_not_found": "User not found",
       "account_deleted": "Account has been deleted",
-      "brand_user": "Please use Sauced brand panel."
+      "brand_user": "Please use Sauced brand panel.",
+      "invalid_credentials": "Invalid email or password"
     },
     "forgot_password": {
       "success": "Password reset email sent successfully",
