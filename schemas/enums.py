@@ -18,16 +18,16 @@ class Language(str, Enum):
 
 class LanguageRequest(str, Enum):
     """Request body language enum - frontend sends these values"""
-    EN = "EN"
-    FR = "FR"
+    en = "en"
+    fr = "fr"
     
     @classmethod
     def get_default(cls):
-        return cls.EN
+        return cls.en
     
     @classmethod
     def to_database_language(cls, request_lang: str) -> str:
         """Convert request language to database language"""
-        if request_lang == cls.FR:
-            return Language.FRENCH
-        return Language.ENGLISH
+        if request_lang == cls.fr:
+            return Language.FRENCH.value
+        return Language.ENGLISH.value

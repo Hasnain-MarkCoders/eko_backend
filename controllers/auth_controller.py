@@ -20,7 +20,7 @@ class AuthController:
     
     async def email_password_signup(self, email: str, password: str, confirm_password: str, language: str, agreed: bool):
         """Email/password signup using Firebase - uses language from request body"""
-        # Convert request language (EN/FR) to database language (english/french)
+        # Convert request language (en/fr) to database language (english/french)
         database_language = LanguageRequest.to_database_language(language)
         # Convert database language to locale code for get_message()
         locale_code = Language.get_locale_code(database_language)
@@ -237,7 +237,7 @@ class AuthController:
     
     async def onboarding(self, user_id: str, name: str, age: int, gender: str, language: str, purpose: str, user_language: str = "en"):
         """Complete user onboarding with additional profile information - uses user's stored language preference"""
-        # Convert request language (EN/FR) to database language (english/french)
+        # Convert request language (en/fr) to database language (english/french)
         database_language = LanguageRequest.to_database_language(language)
         try:
             # Convert string user_id to ObjectId

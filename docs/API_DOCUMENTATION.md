@@ -69,7 +69,7 @@ POST /auth/signup
   "email": "user@example.com",
   "password": "SecurePassword123!",
   "confirm_password": "SecurePassword123!",
-  "language": "EN",
+  "language": "en",
   "agreed": true
 }
 ```
@@ -78,7 +78,7 @@ POST /auth/signup
 - `email`: Valid email address (required)
 - `password`: Minimum 8 characters (required)
 - `confirm_password`: Must match password exactly (required)
-- `language`: Must be "EN" or "FR" (default: "EN")
+- `language`: Must be "en" or "fr" (default: "en")
 - `agreed`: Must be true (required)
 
 **Response:**
@@ -208,7 +208,7 @@ POST /auth/onboarding
   "name": "John Doe",
   "age": 25,
   "gender": "male",
-  "language": "EN",
+  "language": "en",
   "purpose": "personal assistance"
 }
 ```
@@ -236,7 +236,7 @@ POST /auth/onboarding
 - `name`: Required, non-empty string
 - `age`: Required, integer between 1-120
 - `gender`: Required, one of: "male", "female", "other"
-- `language`: Required, one of: "EN", "FR"
+- `language`: Required, one of: "en", "fr"
 - `purpose`: Required, one of: "personal assistance", "business", "education", "entertainment", "health", "productivity", "social", "other"
 
 **Error Responses:**

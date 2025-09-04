@@ -53,7 +53,7 @@ detail = "User with this email already exists"  # Hardcoded English
 ### 3. **Language Handling**
 - **Signup API**: Use language from request body (new users don't exist in DB yet)
 - **All other APIs**: Use user's stored language preference from database
-- **Request Language**: Frontend sends `"EN"` or `"FR"` in request bodies
+- **Request Language**: Frontend sends `"en"` or `"fr"` in request bodies
 - **Database Language**: Stored as `"english"` or `"french"` in database
 - **Language Conversion**: Use `LanguageRequest.to_database_language()` to convert request to database format
 - **Locale conversion**: Use `Language.get_locale_code()` for get_message()
@@ -144,8 +144,8 @@ from schemas.enums import Language, LanguageRequest
 from schemas.enums import LanguageRequest
 
 # Convert request language to database language
-database_language = LanguageRequest.to_database_language("EN")  # Returns "english"
-database_language = LanguageRequest.to_database_language("FR")  # Returns "french"
+database_language = LanguageRequest.to_database_language("en")  # Returns "english"
+database_language = LanguageRequest.to_database_language("fr")  # Returns "french"
 
 # For database operations and existing users
 from schemas.enums import Language
