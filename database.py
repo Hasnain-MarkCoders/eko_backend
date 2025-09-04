@@ -14,6 +14,7 @@ database = client[DB_NAME]
 
 # Collections
 users = database.users
+chats = database.chats
 
 # Create indexes for better performance
 async def create_indexes():
@@ -22,6 +23,11 @@ async def create_indexes():
     await users.create_index("uid")
     await users.create_index("status")
     await users.create_index("type")
+    
+    # Chats collection indexes
+    await chats.create_index([("userId", 1), ("isDeleted", 1)])
+    await chats.create_index([("userId", 1), ("lastMessageAt", -1)])
+    await chats.create_index("status")
 
 # Initialize database
 async def init_db():

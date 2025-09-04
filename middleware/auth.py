@@ -35,8 +35,19 @@ async def get_current_user(request: Request, credentials: HTTPAuthorizationCrede
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
+        # Validate user_id is a valid ObjectId
+        try:
+            user_object_id = ObjectId(user_id)
+        except Exception:
+            language = get_language_from_request(request)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=get_message(language, "general.invalid_user_id"),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
         # Get user from database
-        user = await users.find_one({"_id": ObjectId(user_id)})
+        user = await users.find_one({"_id": user_object_id})
         
         if user is None:
             language = get_language_from_request(request)

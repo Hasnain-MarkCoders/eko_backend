@@ -70,10 +70,29 @@
       "user_not_found": "Utilisateur non trouvé dans MongoDB"
     }
   },
+  "chat": {
+    "create": {
+      "success": "Chat créé avec succès"
+    },
+    "delete": {
+      "success": "Chat supprimé avec succès"
+    },
+    "delete_all": {
+      "success": "Tous les chats supprimés avec succès"
+    },
+    "not_found": "Chat non trouvé",
+    "suggestions": {
+      "success": "Suggestions de chat récupérées avec succès"
+    },
+    "saved": {
+      "success": "Chats sauvegardés récupérés avec succès"
+    }
+  },
   "general": {
     "welcome": "Bienvenue dans l'API Eko Backend",
     "health": "L'API est en bonne santé",
     "invalid_user_id": "Format d'ID utilisateur invalide",
+    "invalid_chat_id": "Format d'ID de chat invalide",
     "user_not_found": "Utilisateur non trouvé",
     "internal_error": "Erreur interne du serveur",
     "validation_error": "Erreur de validation",
