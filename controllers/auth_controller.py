@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime, timezone
+from locales import get_message
 
 load_dotenv()
 
@@ -16,7 +17,7 @@ class AuthController:
     def __init__(self):
         self.admin = initialize_admin()
     
-    async def email_password_signup(self, email: str, password: str):
+    async def email_password_signup(self, email: str, password: str, language: str = "en"):
         """Email/password signup using Firebase"""
         try:
             # Check if user already exists in database
@@ -24,7 +25,7 @@ class AuthController:
             if existing_user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="User with this email already exists"
+                    detail=get_message(language, "auth.signup.email_exists")
                 )
             
             # Create user in Firebase
@@ -60,11 +61,24 @@ class AuthController:
             token = jwt.encode({"_id": str(result.inserted_id)}, TOKEN_KEY, algorithm="HS256")
             
             return {
-                "user": {
-                    "token": token,
-                    **new_user
-                },
-                "message": "User created successfully"
+                "success": True,
+                "message": get_message(language, "auth.signup.success"),
+                "data": {
+                    "user_id": str(result.inserted_id),
+                    "uid": new_user["uid"],
+                    "email": new_user["email"],
+                    "name": new_user["name"],
+                    "provider": new_user["provider"],
+                    "status": new_user["status"],
+                    "welcome": new_user["welcome"],
+                    "image": new_user["image"],
+                    "type": new_user["type"],
+                    "notificationToken": new_user["notificationToken"],
+                    "isDeleted": new_user["isDeleted"],
+                    "createdAt": new_user["createdAt"],
+                    "updatedAt": new_user["updatedAt"],
+                    "token": token
+                }
             }
             
         except Exception as error:
@@ -72,20 +86,20 @@ class AuthController:
             if "EMAIL_EXISTS" in str(error):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="User with this email already exists"
+                    detail=get_message(language, "auth.signup.email_exists")
                 )
             elif "WEAK_PASSWORD" in str(error):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Password is too weak. Use at least 6 characters."
+                    detail=get_message(language, "auth.signup.weak_password")
                 )
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=str(error)
+                    detail=get_message(language, "general.internal_error")
                 )
     
-    async def email_password_login(self, email: str, password: str):
+    async def email_password_login(self, email: str, password: str, language: str = "en"):
         """Email/password login using Firebase"""
         try:
             # Check if user exists in database
@@ -93,21 +107,21 @@ class AuthController:
             if not existing_user:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="User not found"
+                    detail=get_message(language, "auth.login.user_not_found")
                 )
             
             # Check if user is deleted
             if existing_user.get("isDeleted", False):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Account has been deleted"
+                    detail=get_message(language, "auth.login.account_deleted")
                 )
             
             # Check if user is brand type
             if existing_user.get("type") == "brand":
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Please use Sauced brand panel."
+                    detail=get_message(language, "auth.login.brand_user")
                 )
             
             # Convert ObjectId to string for serialization
@@ -121,21 +135,34 @@ class AuthController:
             token = jwt.encode({"_id": existing_user["_id"]}, TOKEN_KEY, algorithm="HS256")
             
             return {
-                "user": {
-                    "token": token,
-                    **existing_user
-                },
-                "message": "Login successful"
+                "success": True,
+                "message": get_message(language, "auth.login.success"),
+                "data": {
+                    "user_id": existing_user["_id"],
+                    "uid": existing_user["uid"],
+                    "email": existing_user["email"],
+                    "name": existing_user["name"],
+                    "provider": existing_user["provider"],
+                    "status": existing_user["status"],
+                    "welcome": existing_user["welcome"],
+                    "image": existing_user["image"],
+                    "type": existing_user["type"],
+                    "notificationToken": existing_user["notificationToken"],
+                    "isDeleted": existing_user["isDeleted"],
+                    "createdAt": existing_user["createdAt"],
+                    "updatedAt": existing_user["updatedAt"],
+                    "token": token
+                }
             }
             
         except Exception as error:
             print(f"ERROR = {error}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=str(error)
+                detail=get_message(language, "general.internal_error")
             )
     
-    async def forgot_password(self, email: str):
+    async def forgot_password(self, email: str, language: str = "en"):
         """Send password reset email using Firebase"""
         try:
             # Check if user exists in database
@@ -171,9 +198,12 @@ class AuthController:
                 # For now, we'll return the link (in production, send via email service)
                 
                 return {
+                    "success": True,
                     "message": "Password reset email sent successfully",
-                    "resetLink": reset_link,
-                    "note": "In production, this link would be sent via email"
+                    "data": {
+                        "resetLink": reset_link,
+                        "note": "In production, this link would be sent via email"
+                    }
                 }
                 
             except Exception as firebase_error:
@@ -192,7 +222,7 @@ class AuthController:
                 detail=str(error)
             )
     
-    async def onboarding(self, user_id: str, name: str, age: int, gender: str, language: str, purpose: str):
+    async def onboarding(self, user_id: str, name: str, age: int, gender: str, language: str, purpose: str, user_language: str = "en"):
         """Complete user onboarding with additional profile information"""
         try:
             # Convert string user_id to ObjectId

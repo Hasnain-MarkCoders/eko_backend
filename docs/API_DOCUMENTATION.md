@@ -15,6 +15,45 @@ Most endpoints require authentication via Firebase ID tokens. Include the token 
 Authorization: Bearer <firebase_id_token>
 ```
 
+## Internationalization (i18n)
+
+The API supports multiple languages for all response messages. Language detection works as follows:
+
+### Language Detection Priority:
+1. **User's stored language preference** (for authenticated endpoints)
+2. **Accept-Language header** (for unauthenticated endpoints)
+3. **Default to English** (fallback)
+
+### Supported Languages:
+- `en` - English (default)
+- `fr` - French
+
+### Language Headers:
+For unauthenticated endpoints, include the language preference in the request header:
+```
+Accept-Language: fr
+```
+
+### Example Localized Responses:
+
+**English Response:**
+```json
+{
+  "success": true,
+  "message": "User created successfully",
+  "data": {...}
+}
+```
+
+**French Response:**
+```json
+{
+  "success": true,
+  "message": "Utilisateur créé avec succès",
+  "data": {...}
+}
+```
+
 ## Endpoints
 
 ### Authentication Endpoints
@@ -35,12 +74,23 @@ POST /auth/signup
 **Response:**
 ```json
 {
+  "success": true,
   "message": "User created successfully",
-  "user": {
-    "_id": "user_id",
+  "data": {
+    "user_id": "user_id",
+    "uid": "firebase_uid",
     "email": "user@example.com",
-    "name": "User Name",
-    "uid": "firebase_uid"
+    "name": "",
+    "provider": "password",
+    "status": "active",
+    "welcome": true,
+    "image": "https://sauced-app-bucket.s3.us-east-2.amazonaws.com/sauced_placeholder.webp",
+    "type": "user",
+    "notificationToken": "",
+    "isDeleted": false,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
@@ -61,12 +111,23 @@ POST /auth/login
 **Response:**
 ```json
 {
+  "success": true,
   "message": "Login successful",
-  "user": {
-    "_id": "user_id",
+  "data": {
+    "user_id": "user_id",
+    "uid": "firebase_uid",
     "email": "user@example.com",
     "name": "User Name",
-    "uid": "firebase_uid"
+    "provider": "password",
+    "status": "active",
+    "welcome": true,
+    "image": "https://sauced-app-bucket.s3.us-east-2.amazonaws.com/sauced_placeholder.webp",
+    "type": "user",
+    "notificationToken": "",
+    "isDeleted": false,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
@@ -86,7 +147,12 @@ POST /auth/forgot-password
 **Response:**
 ```json
 {
-  "message": "Password reset email sent successfully"
+  "success": true,
+  "message": "Password reset email sent successfully",
+  "data": {
+    "resetLink": "https://example.com/reset?token=...",
+    "note": "In production, this link would be sent via email"
+  }
 }
 ```
 
@@ -159,9 +225,10 @@ PUT /profile/change-name
 **Response:**
 ```json
 {
+  "success": true,
   "message": "User Name Changed Successfully",
-  "user": {
-    "_id": "user_id",
+  "data": {
+    "user_id": "user_id",
     "name": "New Display Name",
     "email": "user@example.com",
     "updatedAt": "2024-01-01T00:00:00Z"
@@ -186,9 +253,10 @@ PUT /profile/change-image
 **Response:**
 ```json
 {
+  "success": true,
   "message": "User Image Changed Successfully",
-  "user": {
-    "_id": "user_id",
+  "data": {
+    "user_id": "user_id",
     "name": "User Name",
     "email": "user@example.com",
     "image": "https://example.com/profile-image.jpg",
@@ -207,8 +275,11 @@ DELETE /profile/delete
 **Response:**
 ```json
 {
+  "success": true,
   "message": "User account deleted successfully",
-  "note": "Account has been deactivated and personal information removed. Firebase account has been deleted."
+  "data": {
+    "note": "Account has been deactivated and personal information removed. Firebase account has been deleted."
+  }
 }
 ```
 
@@ -222,7 +293,11 @@ GET /profile/is-active
 **Response:**
 ```json
 {
-  "status": "active"
+  "success": true,
+  "message": "User status retrieved successfully",
+  "data": {
+    "status": "active"
+  }
 }
 ```
 
@@ -236,12 +311,20 @@ GET /profile/user
 **Response:**
 ```json
 {
-  "user": {
-    "_id": "user_id",
+  "success": true,
+  "message": "User profile retrieved successfully",
+  "data": {
+    "user_id": "user_id",
     "name": "User Name",
     "email": "user@example.com",
     "image": "https://example.com/profile-image.jpg",
     "status": "active",
+    "welcome": true,
+    "notificationToken": "",
+    "age": 25,
+    "gender": "male",
+    "language": "english",
+    "purpose": "personal assistance",
     "createdAt": "2024-01-01T00:00:00Z",
     "updatedAt": "2024-01-01T00:00:00Z"
   }
@@ -258,7 +341,9 @@ GET /profile/welcome1
 **Response:**
 ```json
 {
-  "message": "Welcome 1"
+  "success": true,
+  "message": "Welcome 1",
+  "data": null
 }
 ```
 
@@ -272,9 +357,10 @@ PUT /profile/welcome2
 **Response:**
 ```json
 {
+  "success": true,
   "message": "Welcome 2",
-  "user": {
-    "_id": "user_id",
+  "data": {
+    "user_id": "user_id",
     "name": "User Name",
     "email": "user@example.com",
     "welcome": false,
@@ -300,9 +386,10 @@ PUT /profile/update-token
 **Response:**
 ```json
 {
+  "success": true,
   "message": "Notification Token Updated Successfully",
-  "user": {
-    "_id": "user_id",
+  "data": {
+    "user_id": "user_id",
     "name": "User Name",
     "email": "user@example.com",
     "notificationToken": "fcm_token_here",
@@ -324,14 +411,18 @@ GET /profile/debug-name/{user_id}
 **Response:**
 ```json
 {
-  "mongo": {
-    "uid": "firebase_uid",
-    "name": "Display Name in MongoDB",
-    "email": "user@example.com"
-  },
-  "firebase": {
-    "uid": "firebase_uid",
-    "display_name": "Display Name in Firebase"
+  "success": true,
+  "message": "Name comparison retrieved successfully",
+  "data": {
+    "mongo": {
+      "uid": "firebase_uid",
+      "name": "Display Name in MongoDB",
+      "email": "user@example.com"
+    },
+    "firebase": {
+      "uid": "firebase_uid",
+      "display_name": "Display Name in Firebase"
+    }
   }
 }
 ```
@@ -346,7 +437,9 @@ GET /
 **Response:**
 ```json
 {
-  "message": "Welcome to Eko Backend API"
+  "success": true,
+  "message": "Welcome to Eko Backend API",
+  "data": null
 }
 ```
 
@@ -358,39 +451,71 @@ GET /health
 **Response:**
 ```json
 {
-  "status": "healthy"
+  "success": true,
+  "message": "API is healthy",
+  "data": {
+    "status": "healthy"
+  }
 }
 ```
 
 ## Error Responses
 
-All endpoints may return the following error responses:
+All endpoints return standardized error responses in the following format:
 
-### 400 Bad Request
+### Standard Error Response Format
 ```json
 {
-  "detail": "Error description"
+  "success": false,
+  "message": "Error description",
+  "data": null
 }
 ```
 
-### 401 Unauthorized
+### Common Error Responses
+
+#### 400 Bad Request
 ```json
 {
-  "detail": "Invalid or expired token"
+  "success": false,
+  "message": "Error description",
+  "data": null
 }
 ```
 
-### 404 Not Found
+#### 401 Unauthorized
 ```json
 {
-  "detail": "Resource not found"
+  "success": false,
+  "message": "Invalid or expired token",
+  "data": null
 }
 ```
 
-### 500 Internal Server Error
+#### 404 Not Found
 ```json
 {
-  "detail": "Internal server error"
+  "success": false,
+  "message": "Resource not found",
+  "data": null
+}
+```
+
+#### 422 Validation Error
+```json
+{
+  "success": false,
+  "message": "Validation error: field_name: error description",
+  "data": null
+}
+```
+
+#### 500 Internal Server Error
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "data": null
 }
 ```
 
@@ -421,7 +546,9 @@ All endpoints may return the following error responses:
 ### Error Object
 ```json
 {
-  "detail": "string"
+  "success": false,
+  "message": "string",
+  "data": null
 }
 ```
 

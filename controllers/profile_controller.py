@@ -4,17 +4,18 @@ from services.firebase import initialize_admin
 from datetime import datetime, timezone
 from bson import ObjectId
 import uuid
+from locales import get_message
 
 class ProfileController:
     def __init__(self):
         self.admin = initialize_admin()
     
-    async def change_name(self, user_id: str, new_name: str):
+    async def change_name(self, user_id: str, new_name: str, language: str = "en"):
         """Change user's display name in both MongoDB and Firebase"""
         if not new_name or new_name.strip() == "":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Name cannot be empty"
+                detail=get_message(language, "profile.change_name.name_empty")
             )
         
         try:
@@ -31,14 +32,14 @@ class ProfileController:
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                detail=get_message(language, "profile.change_name.user_not_found")
             )
         
         # Check if new name is same as current name
         if current_user.get("name") == new_name:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="New name cannot be the same as current name"
+                detail=get_message(language, "profile.change_name.same_name")
             )
         
         # Update name in Firebase first
@@ -54,7 +55,7 @@ class ProfileController:
                 print(f"❌ Firebase update error: {e}")
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to update display name in Firebase"
+                    detail=get_message(language, "profile.change_name.firebase_update_failed")
                 )
         
         # Update name in MongoDB
@@ -74,16 +75,22 @@ class ProfileController:
         updated_user["_id"] = str(updated_user["_id"])
         
         return {
-            "message": "User Name Changed Successfully",
-            "user": updated_user
+            "success": True,
+            "message": get_message(language, "profile.change_name.success"),
+            "data": {
+                "user_id": updated_user["_id"],
+                "name": updated_user["name"],
+                "email": updated_user["email"],
+                "updatedAt": updated_user["updatedAt"]
+            }
         }
     
-    async def change_image(self, user_id: str, image_url: str):
+    async def change_image(self, user_id: str, image_url: str, language: str = "en"):
         """Change user's profile image"""
         if not image_url or image_url.strip() == "":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Image URL cannot be empty"
+                detail=get_message(language, "profile.change_image.image_empty")
             )
         
         try:
@@ -112,11 +119,18 @@ class ProfileController:
         updated_user["_id"] = str(updated_user["_id"])
         
         return {
+            "success": True,
             "message": "User Image Changed Successfully",
-            "user": updated_user
+            "data": {
+                "user_id": updated_user["_id"],
+                "name": updated_user["name"],
+                "email": updated_user["email"],
+                "image": updated_user["image"],
+                "updatedAt": updated_user["updatedAt"]
+            }
         }
     
-    async def delete_user(self, user_id: str):
+    async def delete_user(self, user_id: str, language: str = "en"):
         """Soft delete user account (Reddit-style deletion)"""
         try:
             try:
@@ -182,8 +196,11 @@ class ProfileController:
                     # The user is already soft-deleted in our database
             
             return {
+                "success": True,
                 "message": "User account deleted successfully",
-                "note": "Account has been deactivated and personal information removed. Firebase account has been deleted."
+                "data": {
+                    "note": "Account has been deactivated and personal information removed. Firebase account has been deleted."
+                }
             }
             
         except Exception as e:
@@ -195,7 +212,7 @@ class ProfileController:
                 detail="Failed to delete user"
             )
     
-    async def is_active(self, user_id: str):
+    async def is_active(self, user_id: str, language: str = "en"):
         """Check if user account is active"""
         try:
             # Convert string user_id to ObjectId
@@ -213,9 +230,15 @@ class ProfileController:
                 detail="User not found"
             )
         
-        return {"status": user.get("status", "inactive")}
+        return {
+            "success": True,
+            "message": "User status retrieved successfully",
+            "data": {
+                "status": user.get("status", "inactive")
+            }
+        }
     
-    async def get_user(self, user_id: str):
+    async def get_user(self, user_id: str, language: str = "en"):
         """Get current user's profile"""
         try:
             # Convert string user_id to ObjectId
@@ -234,13 +257,35 @@ class ProfileController:
             )
         
         user["_id"] = str(user["_id"])
-        return {"user": user}
+        return {
+            "success": True,
+            "message": "User profile retrieved successfully",
+            "data": {
+                "user_id": user["_id"],
+                "name": user["name"],
+                "email": user["email"],
+                "image": user["image"],
+                "status": user["status"],
+                "welcome": user["welcome"],
+                "notificationToken": user["notificationToken"],
+                "age": user.get("age"),
+                "gender": user.get("gender"),
+                "language": user.get("language"),
+                "purpose": user.get("purpose"),
+                "createdAt": user["createdAt"],
+                "updatedAt": user["updatedAt"]
+            }
+        }
     
-    async def welcome1(self, user_id: str):
+    async def welcome1(self, user_id: str, language: str = "en"):
         """Check user's welcome status"""
-        return {"message": "Welcome 1"}
+        return {
+            "success": True,
+            "message": "Welcome 1",
+            "data": None
+        }
     
-    async def welcome2(self, user_id: str):
+    async def welcome2(self, user_id: str, language: str = "en"):
         """Update user's welcome status"""
         try:
             # Convert string user_id to ObjectId
@@ -267,11 +312,18 @@ class ProfileController:
         updated_user["_id"] = str(updated_user["_id"])
         
         return {
+            "success": True,
             "message": "Welcome 2",
-            "user": updated_user
+            "data": {
+                "user_id": updated_user["_id"],
+                "name": updated_user["name"],
+                "email": updated_user["email"],
+                "welcome": updated_user["welcome"],
+                "updatedAt": updated_user["updatedAt"]
+            }
         }
     
-    async def update_token(self, user_id: str, notification_token: str):
+    async def update_token(self, user_id: str, notification_token: str, language: str = "en"):
         """Update user's notification token"""
         try:
             # Convert string user_id to ObjectId
@@ -298,11 +350,18 @@ class ProfileController:
         updated_user["_id"] = str(updated_user["_id"])
         
         return {
+            "success": True,
             "message": "Notification Token Updated Successfully",
-            "user": updated_user
+            "data": {
+                "user_id": updated_user["_id"],
+                "name": updated_user["name"],
+                "email": updated_user["email"],
+                "notificationToken": updated_user["notificationToken"],
+                "updatedAt": updated_user["updatedAt"]
+            }
         }
 
-    async def debug_user_name(self, user_id: str):
+    async def debug_user_name(self, user_id: str, language: str = "en"):
         # Debug: Compare display name in MongoDB vs Firebase
         try:
             # Convert user_id to ObjectId
@@ -333,13 +392,17 @@ class ProfileController:
                 firebase_name = f"❌ Failed to fetch from Firebase: {e}"
 
         return {
-            "mongo": {
-                "uid": firebase_uid,
-                "name": mongo_user.get("name"),
-                "email": mongo_user.get("email")
-            },
-            "firebase": {
-                "uid": firebase_uid,
-                "display_name": firebase_name
+            "success": True,
+            "message": "Name comparison retrieved successfully",
+            "data": {
+                "mongo": {
+                    "uid": firebase_uid,
+                    "name": mongo_user.get("name"),
+                    "email": mongo_user.get("email")
+                },
+                "firebase": {
+                    "uid": firebase_uid,
+                    "display_name": firebase_name
+                }
             }
         }

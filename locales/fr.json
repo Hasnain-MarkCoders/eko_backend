@@ -1,0 +1,78 @@
+{
+  "auth": {
+    "signup": {
+      "success": "Utilisateur créé avec succès",
+      "email_exists": "Un utilisateur avec cet email existe déjà",
+      "weak_password": "Le mot de passe est trop faible. Utilisez au moins 6 caractères."
+    },
+    "login": {
+      "success": "Connexion réussie",
+      "user_not_found": "Utilisateur non trouvé",
+      "account_deleted": "Le compte a été supprimé",
+      "brand_user": "Veuillez utiliser le panneau de marque Sauced."
+    },
+    "forgot_password": {
+      "success": "Email de réinitialisation du mot de passe envoyé avec succès",
+      "user_not_found": "Utilisateur non trouvé",
+      "reset_failed": "Échec de la génération du lien de réinitialisation du mot de passe"
+    },
+    "onboarding": {
+      "success": "Intégration terminée avec succès",
+      "already_completed": "L'utilisateur a déjà terminé l'intégration. Le drapeau de bienvenue est false.",
+      "invalid_user_id": "Format d'ID utilisateur invalide",
+      "user_not_found": "Utilisateur non trouvé",
+      "account_deleted": "Le compte a été supprimé",
+      "firebase_update_failed": "Échec de la mise à jour du nom d'affichage dans Firebase",
+      "onboarding_failed": "Échec de l'intégration"
+    }
+  },
+  "profile": {
+    "change_name": {
+      "success": "Nom d'utilisateur modifié avec succès",
+      "name_empty": "Le nom ne peut pas être vide",
+      "same_name": "Le nouveau nom ne peut pas être le même que le nom actuel",
+      "firebase_update_failed": "Échec de la mise à jour du nom d'affichage dans Firebase",
+      "user_not_found": "Utilisateur non trouvé"
+    },
+    "change_image": {
+      "success": "Image d'utilisateur modifiée avec succès",
+      "image_empty": "L'URL de l'image ne peut pas être vide",
+      "user_not_found": "Utilisateur non trouvé"
+    },
+    "delete": {
+      "success": "Compte utilisateur supprimé avec succès",
+      "note": "Le compte a été désactivé et les informations personnelles ont été supprimées. Le compte Firebase a été supprimé.",
+      "already_deleted": "Le compte utilisateur est déjà supprimé",
+      "user_not_found": "Utilisateur non trouvé"
+    },
+    "get_user": {
+      "success": "Profil utilisateur récupéré avec succès",
+      "user_not_found": "Utilisateur non trouvé"
+    },
+    "is_active": {
+      "success": "Statut utilisateur récupéré avec succès"
+    },
+    "welcome": {
+      "welcome1": "Bienvenue 1",
+      "welcome2": "Bienvenue 2",
+      "user_not_found": "Utilisateur non trouvé"
+    },
+    "update_token": {
+      "success": "Token de notification mis à jour avec succès",
+      "user_not_found": "Utilisateur non trouvé"
+    },
+    "debug_name": {
+      "success": "Comparaison de noms récupérée avec succès",
+      "user_not_found": "Utilisateur non trouvé dans MongoDB"
+    }
+  },
+  "general": {
+    "welcome": "Bienvenue dans l'API Eko Backend",
+    "health": "L'API est en bonne santé",
+    "invalid_user_id": "Format d'ID utilisateur invalide",
+    "user_not_found": "Utilisateur non trouvé",
+    "internal_error": "Erreur interne du serveur",
+    "validation_error": "Erreur de validation",
+    "unauthorized": "Token invalide ou expiré"
+  }
+}

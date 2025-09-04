@@ -1,0 +1,78 @@
+{
+  "auth": {
+    "signup": {
+      "success": "User created successfully",
+      "email_exists": "User with this email already exists",
+      "weak_password": "Password is too weak. Use at least 6 characters."
+    },
+    "login": {
+      "success": "Login successful",
+      "user_not_found": "User not found",
+      "account_deleted": "Account has been deleted",
+      "brand_user": "Please use Sauced brand panel."
+    },
+    "forgot_password": {
+      "success": "Password reset email sent successfully",
+      "user_not_found": "User not found",
+      "reset_failed": "Failed to generate password reset link"
+    },
+    "onboarding": {
+      "success": "Onboarding completed successfully",
+      "already_completed": "User has already completed onboarding. Welcome flag is false.",
+      "invalid_user_id": "Invalid user ID format",
+      "user_not_found": "User not found",
+      "account_deleted": "Account has been deleted",
+      "firebase_update_failed": "Failed to update display name in Firebase",
+      "onboarding_failed": "Failed to complete onboarding"
+    }
+  },
+  "profile": {
+    "change_name": {
+      "success": "User Name Changed Successfully",
+      "name_empty": "Name cannot be empty",
+      "same_name": "New name cannot be the same as current name",
+      "firebase_update_failed": "Failed to update display name in Firebase",
+      "user_not_found": "User not found"
+    },
+    "change_image": {
+      "success": "User Image Changed Successfully",
+      "image_empty": "Image URL cannot be empty",
+      "user_not_found": "User not found"
+    },
+    "delete": {
+      "success": "User account deleted successfully",
+      "note": "Account has been deactivated and personal information removed. Firebase account has been deleted.",
+      "already_deleted": "User account is already deleted",
+      "user_not_found": "User not found"
+    },
+    "get_user": {
+      "success": "User profile retrieved successfully",
+      "user_not_found": "User not found"
+    },
+    "is_active": {
+      "success": "User status retrieved successfully"
+    },
+    "welcome": {
+      "welcome1": "Welcome 1",
+      "welcome2": "Welcome 2",
+      "user_not_found": "User not found"
+    },
+    "update_token": {
+      "success": "Notification Token Updated Successfully",
+      "user_not_found": "User not found"
+    },
+    "debug_name": {
+      "success": "Name comparison retrieved successfully",
+      "user_not_found": "User not found in MongoDB"
+    }
+  },
+  "general": {
+    "welcome": "Welcome to Eko Backend API",
+    "health": "API is healthy",
+    "invalid_user_id": "Invalid user ID format",
+    "user_not_found": "User not found",
+    "internal_error": "Internal server error",
+    "validation_error": "Validation error",
+    "unauthorized": "Invalid or expired token"
+  }
+}
