@@ -308,22 +308,24 @@ Before submitting code for review, ensure:
 ## 🎯 Future Considerations
 
 ### **Pagination**
-When implementing paginated endpoints, use this structure:
+When implementing paginated endpoints, follow the Swagger specification structure:
 ```json
 {
   "success": true,
   "message": "Data retrieved successfully",
-  "data": [...],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 150,
-    "total_pages": 15,
-    "has_next": true,
-    "has_prev": false
+  "data": {
+    "messages": [...],
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 15,
+      "total_messages": 150,
+      "has_next": true
+    }
   }
 }
 ```
+
+**Note**: Pagination metadata is placed inside the `data` field to match the Swagger specification, not outside as originally planned.
 
 ### **Adding New Languages**
 1. Create new locale file (e.g., `locales/es.json`)
