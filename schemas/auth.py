@@ -36,7 +36,7 @@ class OnboardingRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100, description="User's display name")
     age: int = Field(..., gt=0, le=120, description="User's age")
     gender: Literal["male", "female", "other"] = Field(..., description="User's gender")
-    language: LanguageRequest = Field(..., description="User's preferred language (en or fr)")
+    language: LanguageRequest = Field(default=LanguageRequest.en, description="User's preferred language (en or fr)")
     purpose: str = Field(..., min_length=1, max_length=1024, description="User's purpose for using the app")
 
 class OnboardingResponse(BaseModel):
