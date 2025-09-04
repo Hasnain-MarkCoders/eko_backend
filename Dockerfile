@@ -1,18 +1,22 @@
 # Use official Python image
 FROM python:3.11-slim
 
+# Create non-root user early
+RUN useradd --create-home --shell /bin/bash app
+
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
+# Copy requirements with correct ownership
+COPY --chown=app:app requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
-COPY . .
+# Copy all project files with correct ownership
+COPY --chown=app:app . .
 
-# Create a non-root user for security
-RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+# Switch to non-root user for security
 USER app
 
 # Expose FastAPI default port
