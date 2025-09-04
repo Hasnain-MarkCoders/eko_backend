@@ -67,9 +67,19 @@ POST /auth/signup
 ```json
 {
   "email": "user@example.com",
-  "password": "securepassword123"
+  "password": "SecurePassword123!",
+  "confirm_password": "SecurePassword123!",
+  "language": "english",
+  "agreed": true
 }
 ```
+
+**Field Validation:**
+- `email`: Valid email address (required)
+- `password`: Minimum 8 characters (required)
+- `confirm_password`: Must match password exactly (required)
+- `language`: Must be "english" or "french" (default: "english")
+- `agreed`: Must be true (required)
 
 **Response:**
 ```json
@@ -92,6 +102,35 @@ POST /auth/signup
     "updatedAt": "2024-01-01T00:00:00Z",
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
+}
+```
+
+**Error Responses:**
+
+**Passwords Don't Match:**
+```json
+{
+  "success": false,
+  "message": "Passwords do not match",
+  "data": null
+}
+```
+
+**Must Agree to Privacy Policy:**
+```json
+{
+  "success": false,
+  "message": "You must agree to the privacy policy to continue",
+  "data": null
+}
+```
+
+**Email Already Exists:**
+```json
+{
+  "success": false,
+  "message": "User with this email already exists",
+  "data": null
 }
 ```
 

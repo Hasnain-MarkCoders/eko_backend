@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from bson import ObjectId
 from datetime import datetime, timezone
 from locales import get_message
+from schemas.enums import Language
 
 load_dotenv()
 
@@ -17,15 +18,18 @@ class AuthController:
     def __init__(self):
         self.admin = initialize_admin()
     
-    async def email_password_signup(self, email: str, password: str, language: str = "en"):
-        """Email/password signup using Firebase"""
+    async def email_password_signup(self, email: str, password: str, confirm_password: str, language: str, agreed: bool):
+        """Email/password signup using Firebase - uses language from request body"""
+        # Convert language enum to locale code for get_message()
+        locale_code = Language.get_locale_code(language)
+        
         try:
             # Check if user already exists in database
             existing_user = await users.find_one({"email": email})
             if existing_user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=get_message(language, "auth.signup.email_exists")
+                    detail=get_message(locale_code, "auth.signup.email_exists")
                 )
             
             # Create user in Firebase
@@ -50,6 +54,7 @@ class AuthController:
                 "type": "user",
                 "notificationToken": "",
                 "isDeleted": False,
+                "language": language,  # Store user's language preference
                 "createdAt": datetime.now(timezone.utc),
                 "updatedAt": datetime.now(timezone.utc)
             }
@@ -62,7 +67,7 @@ class AuthController:
             
             return {
                 "success": True,
-                "message": get_message(language, "auth.signup.success"),
+                "message": get_message(locale_code, "auth.signup.success"),
                 "data": {
                     "user_id": str(result.inserted_id),
                     "uid": new_user["uid"],
@@ -89,17 +94,17 @@ class AuthController:
             if "EMAIL_EXISTS" in str(error):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=get_message(language, "auth.signup.email_exists")
+                    detail=get_message(locale_code, "auth.signup.email_exists")
                 )
             elif "WEAK_PASSWORD" in str(error):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=get_message(language, "auth.signup.weak_password")
+                    detail=get_message(locale_code, "auth.signup.weak_password")
                 )
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=get_message(language, "general.internal_error")
+                    detail=get_message(locale_code, "general.internal_error")
                 )
     
     async def email_password_login(self, email: str, password: str, language: str = "en"):
@@ -229,7 +234,7 @@ class AuthController:
             )
     
     async def onboarding(self, user_id: str, name: str, age: int, gender: str, language: str, purpose: str, user_language: str = "en"):
-        """Complete user onboarding with additional profile information"""
+        """Complete user onboarding with additional profile information - uses user's stored language preference"""
         try:
             # Convert string user_id to ObjectId
             try:

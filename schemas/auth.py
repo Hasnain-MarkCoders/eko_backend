@@ -1,9 +1,25 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Literal
+from .enums import Language
 
 class EmailPasswordSignupRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
+    confirm_password: str = Field(..., description="Password confirmation")
+    language: Language = Field(default=Language.ENGLISH, description="User's preferred language")
+    agreed: bool = Field(..., description="User must agree to privacy policy")
+    
+    @validator('confirm_password')
+    def passwords_match(cls, v, values, **kwargs):
+        if 'password' in values and v != values['password']:
+            raise ValueError('Passwords do not match')
+        return v
+    
+    @validator('agreed')
+    def must_agree(cls, v):
+        if not v:
+            raise ValueError('You must agree to the privacy policy to continue')
+        return v
 
 class EmailPasswordLoginRequest(BaseModel):
     email: EmailStr

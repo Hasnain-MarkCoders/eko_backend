@@ -20,6 +20,11 @@ Revamp the signup API to include comprehensive password validation, confirmation
 - Language is only collected during onboarding
 - Users can't set their preferred language upfront
 
+### 4. Missing Privacy Policy Agreement
+- No `agreed` field to confirm user has read privacy policy
+- No validation to ensure user has agreed to terms
+- Legal compliance issue for user consent
+
 ## Implementation Requirements
 
 ### 1. Enhanced Request Schema
@@ -38,11 +43,27 @@ Revamp the signup API to include comprehensive password validation, confirmation
     "email": "user@example.com",
     "password": "SecurePassword123!",
     "confirm_password": "SecurePassword123!",
-    "language": "english"
+    "language": "english",
+    "agreed": true
 }
 ```
 
-### 2. Password Validation Rules
+### 2. New Field Validation Rules
+
+#### Password Confirmation
+- **confirm_password**: Must match the `password` field exactly
+- **Error**: "Passwords do not match" if they don't match
+
+#### Privacy Policy Agreement
+- **agreed**: Must be `true` (boolean)
+- **Error**: "You must agree to the privacy policy to continue" if `false`
+
+#### Language Selection
+- **language**: Must be one of supported languages (`"english"` or `"french"`)
+- **Default**: `"english"` if not provided
+- **Error**: "Invalid language selection" if unsupported language
+
+### 3. Password Validation Rules
 
 Implement comprehensive password validation:
 

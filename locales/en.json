@@ -3,7 +3,10 @@
     "signup": {
       "success": "User created successfully",
       "email_exists": "User with this email already exists",
-      "weak_password": "Password is too weak. Use at least 6 characters."
+      "weak_password": "Password is too weak. Use at least 8 characters.",
+      "passwords_no_match": "Passwords do not match",
+      "must_agree": "You must agree to the privacy policy to continue",
+      "invalid_language": "Invalid language selection"
     },
     "login": {
       "success": "Login successful",

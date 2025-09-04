@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from database import users
 from bson import ObjectId
 from locales import get_message
+from schemas.enums import Language
 
 load_dotenv()
 
@@ -49,12 +50,12 @@ async def get_current_user(request: Request, credentials: HTTPAuthorizationCrede
         user["_id"] = str(user["_id"])
         
         # Get user's language preference and add to request state
-        user_language = user.get("language", "en")
-        if user_language not in ["en", "fr"]:
-            user_language = "en"
+        user_language = user.get("language", Language.ENGLISH)
+        # Convert language enum to locale code for get_message()
+        locale_code = Language.get_locale_code(user_language)
         
         # Add language to request state for use in controllers
-        request.state.user_language = user_language
+        request.state.user_language = locale_code
         
         return user
         
